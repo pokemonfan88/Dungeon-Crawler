@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>烛照幽渊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700;900&family=ZCOOL+XiaoWei&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0908;--paper:#161210;--panel:#1d1712;--panel-2:#241c15;--line:#3a2f24;--candle:#e8a659;--candle-dim:#a8703a;--copper:#8a6a4f;--blood:#7a2e22;--blood-bright:#c05a45;--moon:#e4ddd0;--muted:#8f8577;--sanity:#6f7d8a;--rare:#5b8ec4;--epic:#a673ba;--legendary:#e8a659;--common:#9e9e9e;--uncommon:#6db36d;}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:radial-gradient(ellipse at 20% -10%,rgba(232,166,89,0.05),transparent 55%),radial-gradient(ellipse at 90% 110%,rgba(122,46,34,0.08),transparent 55%),var(--ink);color:var(--moon);font-family:"Noto Serif SC",serif;min-height:100vh;}
+#app{max-width:1100px;margin:0 auto;padding:16px;}
+#camp-view{display:block;}#expedition-view{display:none;}
+body.in-expedition #camp-view{display:none;}body.in-expedition #expedition-view{display:block;}
+header{text-align:center;margin-bottom:20px;position:relative;}
+header .eyebrow{font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.5em;font-size:11px;color:var(--muted);text-indent:0.5em;}
+header h1{font-size:34px;font-weight:900;margin:6px 0 4px;letter-spacing:0.15em;background:linear-gradient(180deg,#f3d9ad,var(--candle) 55%,var(--candle-dim));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px rgba(232,166,89,0.15);}
+header .sub{color:var(--muted);font-size:12.5px;letter-spacing:0.05em;}
+header::after{content:"";display:block;width:120px;height:1px;margin:10px auto 0;background:linear-gradient(90deg,transparent,var(--copper),transparent);}
+.gold-bar{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px;font-family:"JetBrains Mono",monospace;font-size:15px;}
+.gold-bar .amount{color:var(--candle);font-size:20px;}.gold-bar .label{color:var(--muted);font-size:11px;}
+.nav-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:0;}
+.nav-tab{font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.1em;background:transparent;color:var(--muted);border:1px solid transparent;border-bottom:none;padding:9px 18px;cursor:pointer;font-size:14px;border-radius:3px 3px 0 0;transition:all .15s ease;position:relative;top:1px;}
+.nav-tab:hover{color:var(--moon);background:rgba(232,166,89,0.05);}
+.nav-tab.active{color:var(--candle);background:var(--panel);border-color:var(--line);border-bottom-color:var(--panel);}
+.panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:3px;padding:14px;position:relative;}
+.panel::before{content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;box-shadow:inset 0 0 40px rgba(0,0,0,0.5);}
+.panel h3{font-family:"ZCOOL XiaoWei",serif;font-size:13px;letter-spacing:0.2em;color:var(--candle-dim);margin:0 0 10px;padding-bottom:8px;border-bottom:1px dashed var(--line);}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.prep-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.prep-layout{grid-template-columns:1fr;}}
+.equip-slot{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;min-height:44px;}
+.equip-slot .slot-label{font-size:10.5px;color:var(--muted);letter-spacing:0.1em;}
+.equip-slot .slot-item{font-size:13px;color:var(--moon);}
+.equip-slot .slot-empty{color:var(--muted);font-style:italic;font-size:12px;}
+.equip-slot .slot-actions{display:flex;gap:4px;}
+.equip-slot .slot-actions button{font-size:10px;padding:4px 8px;}
+.equip-slot.durability-warn{border-color:var(--blood-bright);}
+.inv-panel{max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:3px;padding:8px;background:#100d0a;}
+.inv-panel::-webkit-scrollbar{width:5px;}.inv-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.wh-panel{max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:3px;padding:6px;background:#100d0a;}
+.wh-panel::-webkit-scrollbar{width:5px;}.wh-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px dashed rgba(58,47,36,0.5);font-size:12px;cursor:pointer;transition:background .1s;}
+.inv-row:hover{background:rgba(232,166,89,0.05);}
+.inv-row .inv-name{flex:1;color:var(--moon);}
+.inv-row .inv-dur{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--muted);margin:0 8px;}
+.inv-row .inv-act button{font-size:10px;padding:3px 8px;margin-left:4px;}
+.rarity-common{color:var(--common);}.rarity-uncommon{color:var(--uncommon);}.rarity-rare{color:var(--rare);}.rarity-epic{color:var(--epic);}.rarity-legendary{color:var(--legendary);}
+.quest-card{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:12px;margin-bottom:8px;}
+.quest-card .q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.quest-card .q-name{font-size:14px;color:var(--moon);}
+.quest-card .q-timer{font-family:"JetBrains Mono",monospace;font-size:11px;}
+.quest-card .q-timer.urgent{color:var(--blood-bright);}.quest-card .q-timer.normal{color:var(--muted);}
+.quest-card .q-desc{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.quest-card .q-progress{font-size:11px;color:var(--candle-dim);margin-bottom:6px;}
+.quest-card .q-reward{font-size:11px;color:var(--muted);margin-bottom:8px;}
+.quest-card .q-actions{display:flex;gap:8px;}
+.quest-card.completed{border-color:var(--candle-dim);}
+.smith-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.smith-tab{font-family:"ZCOOL XiaoWei",serif;font-size:12px;padding:6px 14px;cursor:pointer;background:var(--panel-2);color:var(--muted);border:1px solid var(--line);border-radius:3px;transition:all .15s;}
+.smith-tab:hover{color:var(--moon);}.smith-tab.active{color:var(--candle);border-color:var(--candle);background:#2c2118;}
+.smith-content{display:none;}.smith-content.active{display:block;}
+.sell-row{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px dashed var(--line);font-size:12px;}
+.sell-row:hover{background:rgba(232,166,89,0.05);}
+.sell-price{font-family:"JetBrains Mono",monospace;color:var(--candle);font-size:11px;}
+.craft-table{width:100%;font-size:12px;border-collapse:collapse;}
+.craft-table th{color:var(--muted);text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);font-weight:400;font-size:10.5px;}
+.craft-table td{padding:6px 4px;border-bottom:1px dashed var(--line);}
+.craft-table .locked-row{color:var(--muted);font-style:italic;}
+.layer-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:600px){.layer-cards{grid-template-columns:1fr;}}
+.layer-card{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:14px;cursor:pointer;transition:all .15s;position:relative;}
+.layer-card:hover:not(.locked){border-color:var(--candle);}
+.layer-card.locked{opacity:0.55;cursor:not-allowed;}
+.layer-card.locked::after{content:"🔒";position:absolute;top:10px;right:12px;font-size:16px;}
+.layer-card .l-name{font-size:15px;color:var(--moon);margin-bottom:4px;}
+.layer-card .l-depth{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--candle-dim);margin-bottom:6px;}
+.layer-card .l-monsters{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.layer-card .l-danger{font-size:11px;}
+.layer-card .l-unlock{font-size:11px;color:var(--muted);font-style:italic;}
+.layer-card.selected{border-color:var(--candle)!important;box-shadow:0 0 12px rgba(232,166,89,0.1);}
+.exp-layout{display:grid;grid-template-columns:150px 1fr 240px;gap:14px;align-items:start;}
+@media(max-width:880px){.exp-layout{grid-template-columns:1fr;}}
+.torch-aside{text-align:center;padding-top:20px;}
+.flame-wrap{height:56px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:8px;}
+.flame{width:20px;height:32px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6df 0%,var(--candle) 35%,var(--blood) 80%,transparent 100%);filter:blur(0.2px);animation:flicker 1.6s ease-in-out infinite;transform-origin:bottom center;}
+@keyframes flicker{0%{transform:scaleY(1) scaleX(1) rotate(0deg);opacity:1;}20%{transform:scaleY(1.08) scaleX(0.94) rotate(-2deg);opacity:0.95;}40%{transform:scaleY(0.9) scaleX(1.05) rotate(2deg);opacity:1;}60%{transform:scaleY(1.05) scaleX(0.96) rotate(-1deg);opacity:0.9;}80%{transform:scaleY(0.95) scaleX(1.02) rotate(1deg);opacity:1;}100%{transform:scaleY(1) scaleX(1) rotate(0deg);opacity:1;}}
+.gauge-tube{width:16px;height:150px;margin:0 auto;border:1px solid var(--line);border-radius:8px;background:#0d0a08;position:relative;overflow:hidden;}
+.gauge-fill{position:absolute;bottom:0;left:0;width:100%;background:linear-gradient(180deg,var(--candle),var(--blood));transition:height .6s ease;}
+.gauge-label{margin-top:8px;font-size:12px;color:var(--muted);font-family:"JetBrains Mono",monospace;}.gauge-label b{color:var(--moon);}
+.sanity-row{margin-top:20px;}
+.bar-mini{height:8px;border-radius:4px;background:#0d0a08;border:1px solid var(--line);overflow:hidden;margin-top:4px;}
+.bar-mini>div{height:100%;transition:width .5s ease;}.sanity-fill{background:linear-gradient(90deg,var(--sanity),#9aa7b0);}
+.mini-label{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+.main-panel{display:flex;flex-direction:column;gap:12px;}
+.hero-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.stat-chip{flex:1;min-width:90px;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:8px 10px;}
+.stat-chip .k{font-size:10.5px;color:var(--muted);letter-spacing:0.1em;}
+.stat-chip .v{font-family:"JetBrains Mono",monospace;font-size:17px;color:var(--moon);}
+.hp-bar-wrap{flex:2;min-width:160px;}
+.hp-bar{height:14px;border-radius:7px;background:#0d0a08;border:1px solid var(--line);overflow:hidden;}
+.hp-fill{height:100%;background:linear-gradient(90deg,var(--blood-bright),var(--blood));transition:width .4s ease;}
+.depth-line{display:flex;justify-content:space-between;align-items:baseline;font-family:"JetBrains Mono",monospace;color:var(--candle-dim);font-size:13px;padding:6px 2px;border-bottom:1px dashed var(--line);}
+.depth-line .big{font-size:22px;color:var(--candle);}
+.encounter{min-height:120px;border:1px solid var(--line);border-radius:3px;background:radial-gradient(ellipse at 50% 0%,rgba(232,166,89,0.05),transparent 60%),#14100d;padding:14px;display:flex;flex-direction:column;justify-content:center;gap:8px;}
+.encounter.empty{align-items:center;justify-content:center;color:var(--muted);font-size:13px;letter-spacing:0.1em;}
+.monster-name{font-size:18px;color:var(--blood-bright);letter-spacing:0.1em;}
+.monster-hp-wrap{display:flex;align-items:center;gap:8px;}
+.monster-hp{flex:1;height:10px;border-radius:5px;background:#0d0a08;border:1px solid var(--line);overflow:hidden;}
+.monster-hp>div{height:100%;background:linear-gradient(90deg,#8a3d2f,var(--blood-bright));transition:width .3s ease;}
+.monster-hp-num{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+.actions{display:flex;gap:10px;}
+button{font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.1em;background:var(--panel-2);color:var(--moon);border:1px solid var(--copper);border-radius:3px;padding:9px 16px;cursor:pointer;font-size:14px;transition:all .15s ease;}
+button:hover:not(:disabled){background:#2c2118;border-color:var(--candle);color:var(--candle);}
+button:disabled{opacity:0.35;cursor:not-allowed;}
+button.primary{border-color:var(--candle);color:var(--candle);}
+button.danger{border-color:var(--blood-bright);color:var(--blood-bright);}
+button.small{padding:5px 10px;font-size:12px;}
+.actions button{flex:1;}
+.log-box{height:170px;overflow-y:auto;border:1px solid var(--line);border-radius:3px;background:#100d0a;padding:10px 12px;font-size:12.5px;line-height:1.7;color:#c9bfaf;}
+.log-box .entry{color:#bdb2a0;border-bottom:1px solid #211a14;padding:3px 0;}
+.log-box .entry.warn{color:var(--blood-bright);}.log-box .entry.good{color:var(--candle);}.log-box .entry.dim{color:var(--muted);}
+.log-box::-webkit-scrollbar{width:6px;}.log-box::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.skill-bar{margin-bottom:4px;}
+.skill-btn{font-family:"ZCOOL XiaoWei",serif;font-size:11px;padding:6px 10px;background:var(--panel-2);color:var(--moon);border:1px solid var(--line);border-radius:3px;cursor:pointer;transition:all .15s;letter-spacing:0.05em;white-space:nowrap;}
+.skill-btn:hover:not(:disabled){background:#2c2118;border-color:var(--candle);color:var(--candle);}
+.skill-btn:disabled{opacity:0.3;cursor:not-allowed;border-color:var(--line);}
+.skill-btn.on-cooldown{opacity:0.5;border-color:var(--sanity);}
+.skill-btn.active-buff{border-color:var(--candle)!important;box-shadow:0 0 8px rgba(232,166,89,0.25);}
+.skill-btn.danger{border-color:var(--blood-bright);color:var(--blood-bright);}
+.exp-sidebar{display:flex;flex-direction:column;gap:10px;}
+.exp-sidebar .meta-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);}
+.exp-sidebar .meta-row .val{color:var(--moon);}
+.items-bag-mini{max-height:160px;overflow-y:auto;font-size:11px;border:1px solid var(--line);border-radius:3px;padding:6px;background:#100d0a;}
+.items-bag-mini .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(58,47,36,0.4);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;justify-content:center;align-items:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--panel);border:1px solid var(--copper);border-radius:4px;padding:20px;max-width:400px;width:90%;}
+.modal-box h4{color:var(--candle);margin:0 0 10px;font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.1em;}
+.modal-box p{font-size:13px;color:var(--muted);margin-bottom:12px;}
+.modal-box .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+footer{text-align:center;color:var(--muted);font-size:10.5px;margin-top:26px;letter-spacing:0.05em;}
+/* 种族选择 */
+#race-select-view{display:none;max-width:600px;margin:0 auto;padding:20px;text-align:center;animation:fadeIn 0.6s ease;}
+#race-select-view.active{display:block;}
+#app.in-race-select #camp-view,#app.in-race-select #expedition-view{display:none;}
+#app.in-race-select #race-select-view{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.race-carousel{position:relative;display:flex;align-items:center;justify-content:center;gap:16px;margin:20px 0;}
+.race-arrow{font-size:28px;background:transparent;border:none;color:var(--muted);cursor:pointer;padding:10px 14px;transition:all .15s;}
+.race-arrow:hover{color:var(--candle);}
+.race-arrow:disabled{opacity:0.2;cursor:default;}
+.race-card{flex:1;max-width:380px;background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:24px;transition:all .3s ease;}
+.race-card .r-icon{font-size:56px;margin-bottom:8px;}
+.race-card .r-name{font-size:22px;color:var(--moon);font-weight:700;letter-spacing:0.1em;}
+.race-card .r-title{font-size:12px;color:var(--candle-dim);margin-bottom:12px;letter-spacing:0.15em;}
+.race-card .r-statline{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.race-card .r-passive,.race-card .r-skill{font-size:11px;color:var(--muted);text-align:left;margin:6px 0;line-height:1.5;}
+.race-card .r-quote{font-size:11px;color:var(--candle-dim);font-style:italic;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+.race-card.locked .r-icon,.race-card.locked .r-name{opacity:0.4;}
+.race-card.locked .r-lock{font-size:12px;color:var(--blood-bright);margin-top:8px;}
+.race-dots{display:flex;justify-content:center;gap:8px;margin:8px 0;}
+.race-dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:all .2s;}
+.race-dot.active{background:var(--candle);box-shadow:0 0 6px rgba(232,166,89,0.4);}
+.race-enter-btn{margin-top:16px;}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+<div class="eyebrow" id="headerEyebrow">营 地 · 整 备 · 出 征</div>
+<h1>烛 照 幽 渊</h1>
+<div class="sub" id="headerSub">火尽人归，深处不留光</div>
+<div class="gold-bar"><span class="label">营地资产</span> <span class="amount" id="goldNumH">0</span> <span class="label">金</span></div>
+</header>
+
+<!-- ==================== 种族选择视图 ==================== -->
+<div id="race-select-view">
+  <h2 style="color:var(--candle);letter-spacing:0.15em;margin-bottom:4px;">火把已点燃</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">选择你的守望者</p>
+  <div class="race-carousel">
+    <button class="race-arrow" id="racePrev" onclick="raceSlide(-1)">◀</button>
+    <div class="race-card" id="raceCard"></div>
+    <button class="race-arrow" id="raceNext" onclick="raceSlide(1)">▶</button>
+  </div>
+  <div class="race-dots" id="raceDots"></div>
+  <div class="race-enter-btn">
+    <button class="primary" id="raceEnterBtn" onclick="confirmRace()" style="font-size:16px;padding:14px 48px;">🕯️ 以此身踏入深渊</button>
+  </div>
+</div>
+
+<div id="camp-view">
+<nav class="nav-tabs" id="navTabs">
+<button class="nav-tab active" data-tab="prep">⚔️ 整 备</button>
+<button class="nav-tab" data-tab="quest">📜 任务板</button>
+<button class="nav-tab" data-tab="shop">🛒 商 店</button>
+<button class="nav-tab" data-tab="smith">🔨 铁匠铺</button>
+<button class="nav-tab" data-tab="abyss">🕳️ 深渊之门</button>
+<button class="nav-tab" data-tab="church">⛪ 教 堂</button>
+<button class="nav-tab" data-tab="warehouse">📦 仓 库</button>
+<button class="nav-tab locked-tab" data-tab="tavern"><span class="lock-icon">🔒</span> 酒 馆</button>
+<button class="nav-tab" data-tab="settings">⚙️ 设 置</button>
+</nav>
+
+<div class="tab-content active" id="tab-prep"><div class="prep-layout"><div><h3>装备栏</h3><div class="equip-slots" id="equipSlots"></div><h3 style="margin-top:12px;">补给品</h3><p style="font-size:10px;color:var(--muted);">请前往🛒商店购买远征消耗品</p></div><div><h3>背包 <span style="font-size:10px;color:var(--muted);" id="invCount">0/20</span></h3><div class="inv-panel" id="invPanel"><div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">背包空空如也<br><span style="font-size:10px;">深入深渊，获取战利品</span></div></div></div></div></div>
+
+<div class="tab-content" id="tab-quest"><h3>悬赏令</h3><div id="questList"></div><div class="quest-board-footer"><span id="questRefreshInfo"></span><button class="small" id="questRefreshBtn">刷新任务 (免费)</button></div></div>
+
+<div class="tab-content" id="tab-shop"><h3>🛒 远征补给</h3><p style="font-size:11px;color:var(--muted);margin-bottom:12px;">购买消耗品，在远征中随时使用。每种携带上限见商品说明。</p><div id="shopItems" style="display:flex;flex-wrap:wrap;gap:10px;"></div><p style="font-size:10px;color:var(--muted);margin-top:14px;">💡 消耗品在远征中通过底部快捷栏使用</p></div>
+
+<div class="tab-content" id="tab-smith"><div class="smith-tabs"><button class="smith-tab active" data-smith="sell">出 售</button><button class="smith-tab" data-smith="identify">鉴 定 <span style="font-size:10px;" id="identifyBadge"></span></button><button class="smith-tab" data-smith="craft">打 造</button></div><div class="smith-content active" id="smith-sell"></div><div class="smith-content" id="smith-identify"></div><div class="smith-content" id="smith-craft"></div></div>
+
+<div class="tab-content" id="tab-abyss"><h3>选择深渊</h3><div class="layer-cards" id="layerCards"></div><div style="margin-top:14px;text-align:center;" id="abyssAction"></div></div>
+
+<div class="tab-content" id="tab-church"><div class="panel" style="text-align:center;padding:30px;"><h3 style="border:none;margin-bottom:16px;">⛪ 深渊礼拜堂</h3><div id="churchStatus" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div><div id="churchBuff" style="margin-bottom:16px;"></div><button class="primary" id="prayBtn" onclick="doPray()" style="font-size:15px;padding:12px 36px;">🕯️ 祈 祷</button><p style="font-size:10px;color:var(--muted);margin-top:6px;">随机获得一种祝福 · 3小时冷却</p><hr style="border-color:var(--line);margin:16px 0;width:60%;"><div id="churchRestore" style="margin-bottom:10px;"></div><button id="restoreSanityBtn" onclick="restoreSanity()" style="font-size:13px;padding:8px 24px;">🙏 静心祈祷</button></div></div>
+
+<div class="tab-content" id="tab-warehouse"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h3 style="margin:0;border:none;padding:0;">📦 深渊秘库</h3><span style="font-size:12px;color:var(--muted);" id="whCount">0/20</span></div><div id="whUpgradeRow" style="margin-bottom:10px;text-align:right;"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div><div style="font-size:11px;color:var(--candle-dim);margin-bottom:6px;border-bottom:1px dashed var(--line);padding-bottom:4px;">仓库物品</div><div class="wh-panel" id="whPanel"><div style="color:var(--muted);font-size:11px;text-align:center;padding:16px;">仓库空空如也</div></div></div><div><div style="font-size:11px;color:var(--candle-dim);margin-bottom:6px;border-bottom:1px dashed var(--line);padding-bottom:4px;">背包物品</div><div class="wh-panel" id="whInvPanel"></div></div></div></div>
+
+<div class="tab-content" id="tab-settings"><div class="panel" style="text-align:center;padding:30px;max-width:400px;margin:0 auto;"><h3 style="border:none;margin-bottom:20px;">⚙️ 游戏设置</h3><div id="settingsStats" style="margin-bottom:16px;font-size:13px;color:var(--muted);"></div><hr style="border-color:var(--line);margin:16px 0;"><button class="danger" style="font-size:14px;padding:10px 30px;" onclick="confirmDeleteSave()">🗑️ 删除存档</button><p style="font-size:10px;color:var(--blood-bright);margin-top:10px;">此操作不可撤销，所有进度将永久丢失。</p></div></div>
+
+<div class="tab-content" id="tab-tavern"><div class="panel" style="text-align:center;padding:40px;"><h3>🔒 酒馆尚未开放</h3><p style="color:var(--muted);font-size:13px;margin:16px 0;">深渊中除了怪物，还有迷失的灵魂。<br>到达<strong style="color:var(--candle);">绝渊回廊（280尺）</strong>后，<br>或许能找到愿意与你同行的伙伴。</p><p style="color:var(--muted);font-size:11px;">当前最深记录：<span style="color:var(--candle);" id="tavernRecord">0.0</span> 尺 / 需要 280 尺</p></div></div>
+</div>
+
+<div id="expedition-view">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+<div style="font-size:12px;color:var(--muted);">当前层级：<span style="color:var(--candle);" id="expLayerName">浅层回廊</span>&nbsp;|&nbsp;携带金币：<span style="color:var(--candle);" id="expCarriedGold">0</span>&nbsp;|&nbsp;<span style="color:var(--muted);" id="expRace"></span></div>
+<button class="danger small" id="returnCampBtn">返回营地</button></div>
+<div class="exp-layout">
+<aside class="panel torch-aside"><div class="flame-wrap"><div class="flame" id="flame"></div></div><div class="gauge-tube"><div class="gauge-fill" id="torchFill" style="height:100%"></div></div><div class="gauge-label">火把 <b id="torchPct">100</b>%</div><div class="sanity-row"><div class="mini-label"><span>神智</span><span id="sanityNum">100</span></div><div class="bar-mini"><div class="sanity-fill" id="sanityFill" style="width:100%"></div></div></div></aside>
+<main class="panel main-panel"><h3>回 廊 纪 事</h3>
+<div class="hero-row"><div class="hp-bar-wrap"><div class="mini-label"><span>生命</span><span id="hpNum">50 / 50</span></div><div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div></div><div class="stat-chip"><div class="k">攻击</div><div class="v" id="atkNum">8</div></div><div class="stat-chip"><div class="k">防御</div><div class="v" id="defNum">2</div></div><div class="stat-chip"><div class="k">闪避</div><div class="v" id="dodgeNum">0%</div></div></div>
+<div class="depth-line"><span>当前深度 <b class="big" id="depthNum">0.0</b> 尺</span><span>最深记录 <span id="recordNum">0.0</span> 尺</span></div>
+<div class="encounter empty" id="encounterBox">尚未下潜</div>
+<div class="skill-bar" id="skillBar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+<div class="consumable-bar" id="consumableBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;"></div>
+<div class="actions"><button class="primary" id="descendBtn">下 潜</button><button class="danger" id="retreatBtn" disabled>撤 退</button></div>
+<div class="log-box" id="logBox"></div></main>
+<aside class="panel exp-sidebar"><h3>行 囊</h3><div class="meta-row"><span>层级</span><span class="val" id="expLayerLabel">浅层回廊</span></div><div class="meta-row"><span>层内深度上限</span><span class="val" id="expDepthMax">70尺</span></div><div class="items-bag-mini" id="expItemsBag"><div style="color:var(--muted);font-size:10px;text-align:center;">暂无战利品</div></div></aside>
+</div></div>
+<footer>存档自动保存于本机浏览器 · 离开期间英雄仍在黑暗中独自前行</footer>
+</div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox"></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/expedition.js"></script>
+<script src="js/camp.js"></script>
+<script src="js/race.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
