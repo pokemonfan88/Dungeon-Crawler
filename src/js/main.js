@@ -62,9 +62,11 @@ function selectRace(raceId){
   hideModal();
   // 进入营地
   document.getElementById("app").classList.remove("in-race-select");
+  S._inRaceSelect=false;
   switchToCamp();renderCamp();save();
 }
 function startRaceSelect(){
+  S._inRaceSelect=true;
   document.getElementById("app").classList.add("in-race-select");
   raceIdx=0;renderRaceCard();
 }
