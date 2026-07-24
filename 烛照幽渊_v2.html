@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>烛照幽渊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700;900&family=ZCOOL+XiaoWei&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0a0908;--paper:#161210;--panel:#1d1712;--panel-2:#241c15;--line:#3a2f24;--candle:#e8a659;--candle-dim:#a8703a;--copper:#8a6a4f;--blood:#7a2e22;--blood-bright:#c05a45;--moon:#e4ddd0;--muted:#8f8577;--sanity:#6f7d8a;--rare:#5b8ec4;--epic:#a673ba;--legendary:#e8a659;--common:#9e9e9e;--uncommon:#6db36d;}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:radial-gradient(ellipse at 20% -10%,rgba(232,166,89,0.05),transparent 55%),radial-gradient(ellipse at 90% 110%,rgba(122,46,34,0.08),transparent 55%),var(--ink);color:var(--moon);font-family:"Noto Serif SC",serif;min-height:100vh;}
+#app{max-width:1100px;margin:0 auto;padding:16px;}
+#camp-view{display:block;}#expedition-view{display:none;}
+body.in-expedition #camp-view{display:none;}body.in-expedition #expedition-view{display:block;}
+header{text-align:center;margin-bottom:20px;position:relative;}
+header .eyebrow{font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.5em;font-size:11px;color:var(--muted);text-indent:0.5em;}
+header h1{font-size:34px;font-weight:900;margin:6px 0 4px;letter-spacing:0.15em;background:linear-gradient(180deg,#f3d9ad,var(--candle) 55%,var(--candle-dim));-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 30px rgba(232,166,89,0.15);}
+header .sub{color:var(--muted);font-size:12.5px;letter-spacing:0.05em;}
+header::after{content:"";display:block;width:120px;height:1px;margin:10px auto 0;background:linear-gradient(90deg,transparent,var(--copper),transparent);}
+.gold-bar{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:8px;font-family:"JetBrains Mono",monospace;font-size:15px;}
+.gold-bar .amount{color:var(--candle);font-size:20px;}.gold-bar .label{color:var(--muted);font-size:11px;}
+.nav-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:0;}
+.nav-tab{font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.1em;background:transparent;color:var(--muted);border:1px solid transparent;border-bottom:none;padding:9px 18px;cursor:pointer;font-size:14px;border-radius:3px 3px 0 0;transition:all .15s ease;position:relative;top:1px;}
+.nav-tab:hover{color:var(--moon);background:rgba(232,166,89,0.05);}
+.nav-tab.active{color:var(--candle);background:var(--panel);border-color:var(--line);border-bottom-color:var(--panel);}
+.panel{background:linear-gradient(180deg,var(--panel),var(--panel-2));border:1px solid var(--line);border-radius:3px;padding:14px;position:relative;}
+.panel::before{content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;box-shadow:inset 0 0 40px rgba(0,0,0,0.5);}
+.panel h3{font-family:"ZCOOL XiaoWei",serif;font-size:13px;letter-spacing:0.2em;color:var(--candle-dim);margin:0 0 10px;padding-bottom:8px;border-bottom:1px dashed var(--line);}
+.tab-content{display:none;}.tab-content.active{display:block;}
+.prep-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:700px){.prep-layout{grid-template-columns:1fr;}}
+.equip-slot{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;min-height:44px;}
+.equip-slot .slot-label{font-size:10.5px;color:var(--muted);letter-spacing:0.1em;}
+.equip-slot .slot-item{font-size:13px;color:var(--moon);}
+.equip-slot .slot-empty{color:var(--muted);font-style:italic;font-size:12px;}
+.equip-slot .slot-actions{display:flex;gap:4px;}
+.equip-slot .slot-actions button{font-size:10px;padding:4px 8px;}
+.equip-slot.durability-warn{border-color:var(--blood-bright);}
+.inv-panel{max-height:300px;overflow-y:auto;border:1px solid var(--line);border-radius:3px;padding:8px;background:#100d0a;}
+.inv-panel::-webkit-scrollbar{width:5px;}.inv-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.wh-panel{max-height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:3px;padding:6px;background:#100d0a;}
+.wh-panel::-webkit-scrollbar{width:5px;}.wh-panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.inv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px dashed rgba(58,47,36,0.5);font-size:12px;cursor:pointer;transition:background .1s;}
+.inv-row:hover{background:rgba(232,166,89,0.05);}
+.inv-row .inv-name{flex:1;color:var(--moon);}
+.inv-row .inv-dur{font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--muted);margin:0 8px;}
+.inv-row .inv-act button{font-size:10px;padding:3px 8px;margin-left:4px;}
+.rarity-common{color:var(--common);}.rarity-uncommon{color:var(--uncommon);}.rarity-rare{color:var(--rare);}.rarity-epic{color:var(--epic);}.rarity-legendary{color:var(--legendary);}
+.quest-card{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:12px;margin-bottom:8px;}
+.quest-card .q-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.quest-card .q-name{font-size:14px;color:var(--moon);}
+.quest-card .q-timer{font-family:"JetBrains Mono",monospace;font-size:11px;}
+.quest-card .q-timer.urgent{color:var(--blood-bright);}.quest-card .q-timer.normal{color:var(--muted);}
+.quest-card .q-desc{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.quest-card .q-progress{font-size:11px;color:var(--candle-dim);margin-bottom:6px;}
+.quest-card .q-reward{font-size:11px;color:var(--muted);margin-bottom:8px;}
+.quest-card .q-actions{display:flex;gap:8px;}
+.quest-card.completed{border-color:var(--candle-dim);}
+.smith-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.smith-tab{font-family:"ZCOOL XiaoWei",serif;font-size:12px;padding:6px 14px;cursor:pointer;background:var(--panel-2);color:var(--muted);border:1px solid var(--line);border-radius:3px;transition:all .15s;}
+.smith-tab:hover{color:var(--moon);}.smith-tab.active{color:var(--candle);border-color:var(--candle);background:#2c2118;}
+.smith-content{display:none;}.smith-content.active{display:block;}
+.sell-row{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px dashed var(--line);font-size:12px;}
+.sell-row:hover{background:rgba(232,166,89,0.05);}
+.sell-price{font-family:"JetBrains Mono",monospace;color:var(--candle);font-size:11px;}
+.craft-table{width:100%;font-size:12px;border-collapse:collapse;}
+.craft-table th{color:var(--muted);text-align:left;padding:6px 4px;border-bottom:1px solid var(--line);font-weight:400;font-size:10.5px;}
+.craft-table td{padding:6px 4px;border-bottom:1px dashed var(--line);}
+.craft-table .locked-row{color:var(--muted);font-style:italic;}
+.layer-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:600px){.layer-cards{grid-template-columns:1fr;}}
+.layer-card{background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:14px;cursor:pointer;transition:all .15s;position:relative;}
+.layer-card:hover:not(.locked){border-color:var(--candle);}
+.layer-card.locked{opacity:0.55;cursor:not-allowed;}
+.layer-card.locked::after{content:"🔒";position:absolute;top:10px;right:12px;font-size:16px;}
+.layer-card .l-name{font-size:15px;color:var(--moon);margin-bottom:4px;}
+.layer-card .l-depth{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--candle-dim);margin-bottom:6px;}
+.layer-card .l-monsters{font-size:11px;color:var(--muted);margin-bottom:6px;}
+.layer-card .l-danger{font-size:11px;}
+.layer-card .l-unlock{font-size:11px;color:var(--muted);font-style:italic;}
+.layer-card.selected{border-color:var(--candle)!important;box-shadow:0 0 12px rgba(232,166,89,0.1);}
+.exp-layout{display:grid;grid-template-columns:150px 1fr 240px;gap:14px;align-items:start;}
+@media(max-width:880px){.exp-layout{grid-template-columns:1fr;}}
+.torch-aside{text-align:center;padding-top:20px;}
+.flame-wrap{height:56px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:8px;}
+.flame{width:20px;height:32px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 50% 70%,#fff6df 0%,var(--candle) 35%,var(--blood) 80%,transparent 100%);filter:blur(0.2px);animation:flicker 1.6s ease-in-out infinite;transform-origin:bottom center;}
+@keyframes flicker{0%{transform:scaleY(1) scaleX(1) rotate(0deg);opacity:1;}20%{transform:scaleY(1.08) scaleX(0.94) rotate(-2deg);opacity:0.95;}40%{transform:scaleY(0.9) scaleX(1.05) rotate(2deg);opacity:1;}60%{transform:scaleY(1.05) scaleX(0.96) rotate(-1deg);opacity:0.9;}80%{transform:scaleY(0.95) scaleX(1.02) rotate(1deg);opacity:1;}100%{transform:scaleY(1) scaleX(1) rotate(0deg);opacity:1;}}
+.gauge-tube{width:16px;height:150px;margin:0 auto;border:1px solid var(--line);border-radius:8px;background:#0d0a08;position:relative;overflow:hidden;}
+.gauge-fill{position:absolute;bottom:0;left:0;width:100%;background:linear-gradient(180deg,var(--candle),var(--blood));transition:height .6s ease;}
+.gauge-label{margin-top:8px;font-size:12px;color:var(--muted);font-family:"JetBrains Mono",monospace;}.gauge-label b{color:var(--moon);}
+.sanity-row{margin-top:20px;}
+.bar-mini{height:8px;border-radius:4px;background:#0d0a08;border:1px solid var(--line);overflow:hidden;margin-top:4px;}
+.bar-mini>div{height:100%;transition:width .5s ease;}.sanity-fill{background:linear-gradient(90deg,var(--sanity),#9aa7b0);}
+.mini-label{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+.main-panel{display:flex;flex-direction:column;gap:12px;}
+.hero-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;}
+.stat-chip{flex:1;min-width:90px;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:8px 10px;}
+.stat-chip .k{font-size:10.5px;color:var(--muted);letter-spacing:0.1em;}
+.stat-chip .v{font-family:"JetBrains Mono",monospace;font-size:17px;color:var(--moon);}
+.hp-bar-wrap{flex:2;min-width:160px;}
+.hp-bar{height:14px;border-radius:7px;background:#0d0a08;border:1px solid var(--line);overflow:hidden;}
+.hp-fill{height:100%;background:linear-gradient(90deg,var(--blood-bright),var(--blood));transition:width .4s ease;}
+.depth-line{display:flex;justify-content:space-between;align-items:baseline;font-family:"JetBrains Mono",monospace;color:var(--candle-dim);font-size:13px;padding:6px 2px;border-bottom:1px dashed var(--line);}
+.depth-line .big{font-size:22px;color:var(--candle);}
+.encounter{min-height:120px;border:1px solid var(--line);border-radius:3px;background:radial-gradient(ellipse at 50% 0%,rgba(232,166,89,0.05),transparent 60%),#14100d;padding:14px;display:flex;flex-direction:column;justify-content:center;gap:8px;}
+.encounter.empty{align-items:center;justify-content:center;color:var(--muted);font-size:13px;letter-spacing:0.1em;}
+.monster-name{font-size:18px;color:var(--blood-bright);letter-spacing:0.1em;}
+.monster-hp-wrap{display:flex;align-items:center;gap:8px;}
+.monster-hp{flex:1;height:10px;border-radius:5px;background:#0d0a08;border:1px solid var(--line);overflow:hidden;}
+.monster-hp>div{height:100%;background:linear-gradient(90deg,#8a3d2f,var(--blood-bright));transition:width .3s ease;}
+.monster-hp-num{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);white-space:nowrap;}
+.actions{display:flex;gap:10px;}
+button{font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.1em;background:var(--panel-2);color:var(--moon);border:1px solid var(--copper);border-radius:3px;padding:9px 16px;cursor:pointer;font-size:14px;transition:all .15s ease;}
+button:hover:not(:disabled){background:#2c2118;border-color:var(--candle);color:var(--candle);}
+button:disabled{opacity:0.35;cursor:not-allowed;}
+button.primary{border-color:var(--candle);color:var(--candle);}
+button.danger{border-color:var(--blood-bright);color:var(--blood-bright);}
+button.small{padding:5px 10px;font-size:12px;}
+.actions button{flex:1;}
+.log-box{height:170px;overflow-y:auto;border:1px solid var(--line);border-radius:3px;background:#100d0a;padding:10px 12px;font-size:12.5px;line-height:1.7;color:#c9bfaf;}
+.log-box .entry{color:#bdb2a0;border-bottom:1px solid #211a14;padding:3px 0;}
+.log-box .entry.warn{color:var(--blood-bright);}.log-box .entry.good{color:var(--candle);}.log-box .entry.dim{color:var(--muted);}
+.log-box::-webkit-scrollbar{width:6px;}.log-box::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+.skill-bar{margin-bottom:4px;}
+.skill-btn{font-family:"ZCOOL XiaoWei",serif;font-size:11px;padding:6px 10px;background:var(--panel-2);color:var(--moon);border:1px solid var(--line);border-radius:3px;cursor:pointer;transition:all .15s;letter-spacing:0.05em;white-space:nowrap;}
+.skill-btn:hover:not(:disabled){background:#2c2118;border-color:var(--candle);color:var(--candle);}
+.skill-btn:disabled{opacity:0.3;cursor:not-allowed;border-color:var(--line);}
+.skill-btn.on-cooldown{opacity:0.5;border-color:var(--sanity);}
+.skill-btn.active-buff{border-color:var(--candle)!important;box-shadow:0 0 8px rgba(232,166,89,0.25);}
+.skill-btn.danger{border-color:var(--blood-bright);color:var(--blood-bright);}
+.exp-sidebar{display:flex;flex-direction:column;gap:10px;}
+.exp-sidebar .meta-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);}
+.exp-sidebar .meta-row .val{color:var(--moon);}
+.items-bag-mini{max-height:160px;overflow-y:auto;font-size:11px;border:1px solid var(--line);border-radius:3px;padding:6px;background:#100d0a;}
+.items-bag-mini .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed rgba(58,47,36,0.4);}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;justify-content:center;align-items:center;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--panel);border:1px solid var(--copper);border-radius:4px;padding:20px;max-width:400px;width:90%;}
+.modal-box h4{color:var(--candle);margin:0 0 10px;font-family:"ZCOOL XiaoWei",serif;letter-spacing:0.1em;}
+.modal-box p{font-size:13px;color:var(--muted);margin-bottom:12px;}
+.modal-box .modal-actions{display:flex;gap:10px;justify-content:flex-end;}
+footer{text-align:center;color:var(--muted);font-size:10.5px;margin-top:26px;letter-spacing:0.05em;}
+/* 种族选择 */
+#race-select-view{display:none;max-width:600px;margin:0 auto;padding:20px;text-align:center;animation:fadeIn 0.6s ease;}
+#race-select-view.active{display:block;}
+#app.in-race-select #camp-view,#app.in-race-select #expedition-view{display:none;}
+#app.in-race-select #race-select-view{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.race-carousel{position:relative;display:flex;align-items:center;justify-content:center;gap:16px;margin:20px 0;}
+.race-arrow{font-size:28px;background:transparent;border:none;color:var(--muted);cursor:pointer;padding:10px 14px;transition:all .15s;}
+.race-arrow:hover{color:var(--candle);}
+.race-arrow:disabled{opacity:0.2;cursor:default;}
+.race-card{flex:1;max-width:380px;background:var(--panel);border:2px solid var(--line);border-radius:6px;padding:24px;transition:all .3s ease;}
+.race-card .r-icon{font-size:56px;margin-bottom:8px;}
+.race-card .r-name{font-size:22px;color:var(--moon);font-weight:700;letter-spacing:0.1em;}
+.race-card .r-title{font-size:12px;color:var(--candle-dim);margin-bottom:12px;letter-spacing:0.15em;}
+.race-card .r-statline{font-size:12px;color:var(--muted);margin-bottom:10px;}
+.race-card .r-passive,.race-card .r-skill{font-size:11px;color:var(--muted);text-align:left;margin:6px 0;line-height:1.5;}
+.race-card .r-quote{font-size:11px;color:var(--candle-dim);font-style:italic;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);}
+.race-card.locked .r-icon,.race-card.locked .r-name{opacity:0.4;}
+.race-card.locked .r-lock{font-size:12px;color:var(--blood-bright);margin-top:8px;}
+.race-dots{display:flex;justify-content:center;gap:8px;margin:8px 0;}
+.race-dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:all .2s;}
+.race-dot.active{background:var(--candle);box-shadow:0 0 6px rgba(232,166,89,0.4);}
+.race-enter-btn{margin-top:16px;}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+<div class="eyebrow" id="headerEyebrow">营 地 · 整 备 · 出 征</div>
+<h1>烛 照 幽 渊</h1>
+<div class="sub" id="headerSub">火尽人归，深处不留光</div>
+<div class="gold-bar"><span class="label">营地资产</span> <span class="amount" id="goldNumH">0</span> <span class="label">金</span></div>
+</header>
+
+<!-- ==================== 种族选择视图 ==================== -->
+<div id="race-select-view">
+  <h2 style="color:var(--candle);letter-spacing:0.15em;margin-bottom:4px;">火把已点燃</h2>
+  <p style="color:var(--muted);font-size:13px;margin-bottom:20px;">选择你的守望者</p>
+  <div class="race-carousel">
+    <button class="race-arrow" id="racePrev" onclick="raceSlide(-1)">◀</button>
+    <div class="race-card" id="raceCard"></div>
+    <button class="race-arrow" id="raceNext" onclick="raceSlide(1)">▶</button>
+  </div>
+  <div class="race-dots" id="raceDots"></div>
+  <div class="race-enter-btn">
+    <button class="primary" id="raceEnterBtn" onclick="confirmRace()" style="font-size:16px;padding:14px 48px;">🕯️ 以此身踏入深渊</button>
+  </div>
+</div>
+
+<div id="camp-view">
+<nav class="nav-tabs" id="navTabs">
+<button class="nav-tab active" data-tab="prep">⚔️ 整 备</button>
+<button class="nav-tab" data-tab="quest">📜 任务板</button>
+<button class="nav-tab" data-tab="shop">🛒 商 店</button>
+<button class="nav-tab" data-tab="smith">🔨 铁匠铺</button>
+<button class="nav-tab" data-tab="abyss">🕳️ 深渊之门</button>
+<button class="nav-tab" data-tab="church">⛪ 教 堂</button>
+<button class="nav-tab" data-tab="warehouse">📦 仓 库</button>
+<button class="nav-tab locked-tab" data-tab="tavern"><span class="lock-icon">🔒</span> 酒 馆</button>
+<button class="nav-tab" data-tab="settings">⚙️ 设 置</button>
+</nav>
+
+<div class="tab-content active" id="tab-prep"><div class="prep-layout"><div><h3>装备栏</h3><div class="equip-slots" id="equipSlots"></div><h3 style="margin-top:12px;">补给品</h3><p style="font-size:10px;color:var(--muted);">请前往🛒商店购买远征消耗品</p></div><div><h3>背包 <span style="font-size:10px;color:var(--muted);" id="invCount">0/20</span></h3><div class="inv-panel" id="invPanel"><div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">背包空空如也<br><span style="font-size:10px;">深入深渊，获取战利品</span></div></div></div></div></div>
+
+<div class="tab-content" id="tab-quest"><h3>悬赏令</h3><div id="questList"></div><div class="quest-board-footer"><span id="questRefreshInfo"></span><button class="small" id="questRefreshBtn">刷新任务 (免费)</button></div></div>
+
+<div class="tab-content" id="tab-shop"><h3>🛒 远征补给</h3><p style="font-size:11px;color:var(--muted);margin-bottom:12px;">购买消耗品，在远征中随时使用。每种携带上限见商品说明。</p><div id="shopItems" style="display:flex;flex-wrap:wrap;gap:10px;"></div><p style="font-size:10px;color:var(--muted);margin-top:14px;">💡 消耗品在远征中通过底部快捷栏使用</p></div>
+
+<div class="tab-content" id="tab-smith"><div class="smith-tabs"><button class="smith-tab active" data-smith="sell">出 售</button><button class="smith-tab" data-smith="identify">鉴 定 <span style="font-size:10px;" id="identifyBadge"></span></button><button class="smith-tab" data-smith="craft">打 造</button></div><div class="smith-content active" id="smith-sell"></div><div class="smith-content" id="smith-identify"></div><div class="smith-content" id="smith-craft"></div></div>
+
+<div class="tab-content" id="tab-abyss"><h3>选择深渊</h3><div class="layer-cards" id="layerCards"></div><div style="margin-top:14px;text-align:center;" id="abyssAction"></div></div>
+
+<div class="tab-content" id="tab-church"><div class="panel" style="text-align:center;padding:30px;"><h3 style="border:none;margin-bottom:16px;">⛪ 深渊礼拜堂</h3><div id="churchStatus" style="font-size:13px;color:var(--muted);margin-bottom:16px;"></div><div id="churchBuff" style="margin-bottom:16px;"></div><button class="primary" id="prayBtn" onclick="doPray()" style="font-size:15px;padding:12px 36px;">🕯️ 祈 祷</button><p style="font-size:10px;color:var(--muted);margin-top:6px;">随机获得一种祝福 · 3小时冷却</p><hr style="border-color:var(--line);margin:16px 0;width:60%;"><div id="churchRestore" style="margin-bottom:10px;"></div><button id="restoreSanityBtn" onclick="restoreSanity()" style="font-size:13px;padding:8px 24px;">🙏 静心祈祷</button></div></div>
+
+<div class="tab-content" id="tab-warehouse"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;"><h3 style="margin:0;border:none;padding:0;">📦 深渊秘库</h3><span style="font-size:12px;color:var(--muted);" id="whCount">0/20</span></div><div id="whUpgradeRow" style="margin-bottom:10px;text-align:right;"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div><div style="font-size:11px;color:var(--candle-dim);margin-bottom:6px;border-bottom:1px dashed var(--line);padding-bottom:4px;">仓库物品</div><div class="wh-panel" id="whPanel"><div style="color:var(--muted);font-size:11px;text-align:center;padding:16px;">仓库空空如也</div></div></div><div><div style="font-size:11px;color:var(--candle-dim);margin-bottom:6px;border-bottom:1px dashed var(--line);padding-bottom:4px;">背包物品</div><div class="wh-panel" id="whInvPanel"></div></div></div></div>
+
+<div class="tab-content" id="tab-settings"><div class="panel" style="text-align:center;padding:30px;max-width:400px;margin:0 auto;"><h3 style="border:none;margin-bottom:20px;">⚙️ 游戏设置</h3><div id="settingsStats" style="margin-bottom:16px;font-size:13px;color:var(--muted);"></div><hr style="border-color:var(--line);margin:16px 0;"><button class="danger" style="font-size:14px;padding:10px 30px;" onclick="confirmDeleteSave()">🗑️ 删除存档</button><p style="font-size:10px;color:var(--blood-bright);margin-top:10px;">此操作不可撤销，所有进度将永久丢失。</p></div></div>
+
+<div class="tab-content" id="tab-tavern"><div class="panel" style="text-align:center;padding:40px;"><h3>🔒 酒馆尚未开放</h3><p style="color:var(--muted);font-size:13px;margin:16px 0;">深渊中除了怪物，还有迷失的灵魂。<br>到达<strong style="color:var(--candle);">绝渊回廊（280尺）</strong>后，<br>或许能找到愿意与你同行的伙伴。</p><p style="color:var(--muted);font-size:11px;">当前最深记录：<span style="color:var(--candle);" id="tavernRecord">0.0</span> 尺 / 需要 280 尺</p></div></div>
+</div>
+
+<div id="expedition-view">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+<div style="font-size:12px;color:var(--muted);">当前层级：<span style="color:var(--candle);" id="expLayerName">浅层回廊</span>&nbsp;|&nbsp;携带金币：<span style="color:var(--candle);" id="expCarriedGold">0</span>&nbsp;|&nbsp;<span style="color:var(--muted);" id="expRace"></span></div>
+<button class="danger small" id="returnCampBtn">返回营地</button></div>
+<div class="exp-layout">
+<aside class="panel torch-aside"><div class="flame-wrap"><div class="flame" id="flame"></div></div><div class="gauge-tube"><div class="gauge-fill" id="torchFill" style="height:100%"></div></div><div class="gauge-label">火把 <b id="torchPct">100</b>%</div><div class="sanity-row"><div class="mini-label"><span>神智</span><span id="sanityNum">100</span></div><div class="bar-mini"><div class="sanity-fill" id="sanityFill" style="width:100%"></div></div></div></aside>
+<main class="panel main-panel"><h3>回 廊 纪 事</h3>
+<div class="hero-row"><div class="hp-bar-wrap"><div class="mini-label"><span>生命</span><span id="hpNum">50 / 50</span></div><div class="hp-bar"><div class="hp-fill" id="hpFill" style="width:100%"></div></div></div><div class="stat-chip"><div class="k">攻击</div><div class="v" id="atkNum">8</div></div><div class="stat-chip"><div class="k">防御</div><div class="v" id="defNum">2</div></div><div class="stat-chip"><div class="k">闪避</div><div class="v" id="dodgeNum">0%</div></div></div>
+<div class="depth-line"><span>当前深度 <b class="big" id="depthNum">0.0</b> 尺</span><span>最深记录 <span id="recordNum">0.0</span> 尺</span></div>
+<div class="encounter empty" id="encounterBox">尚未下潜</div>
+<div class="skill-bar" id="skillBar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+<div class="consumable-bar" id="consumableBar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;"></div>
+<div class="actions"><button class="primary" id="descendBtn">下 潜</button><button class="danger" id="retreatBtn" disabled>撤 退</button></div>
+<div class="log-box" id="logBox"></div></main>
+<aside class="panel exp-sidebar"><h3>行 囊</h3><div class="meta-row"><span>层级</span><span class="val" id="expLayerLabel">浅层回廊</span></div><div class="meta-row"><span>层内深度上限</span><span class="val" id="expDepthMax">70尺</span></div><div class="items-bag-mini" id="expItemsBag"><div style="color:var(--muted);font-size:10px;text-align:center;">暂无战利品</div></div></aside>
+</div></div>
+<footer>存档自动保存于本机浏览器 · 离开期间英雄仍在黑暗中独自前行</footer>
+</div>
+<div class="modal-overlay" id="modalOverlay"><div class="modal-box" id="modalBox"></div></div>
+
+<script>
+"use strict";
+const SAVE_KEY = "zhuzhao_youyuan_save_v2";
+const RARITY={common:{name:"普通",color:"var(--common)",sellMul:1,craftCostMul:1,idMul:1},uncommon:{name:"精良",color:"var(--uncommon)",sellMul:2.5,craftCostMul:2,idMul:2.5},rare:{name:"稀有",color:"var(--rare)",sellMul:6,craftCostMul:4,idMul:6},epic:{name:"史诗",color:"var(--epic)",sellMul:15,craftCostMul:8,idMul:12},legendary:{name:"传说",color:"var(--legendary)",sellMul:40,craftCostMul:20,idMul:25}};
+
+const EQUIP_TEMPLATES=[
+{id:"rusty_sword",name:"锈剑",type:"weapon",rarity:"common",baseStats:{atk:3},baseDura:90,baseVal:15},{id:"hunting_axe",name:"猎斧",type:"weapon",rarity:"common",baseStats:{atk:4,def:-1},baseDura:80,baseVal:18},{id:"ritual_dagger",name:"仪式匕首",type:"weapon",rarity:"uncommon",baseStats:{atk:5,crit:0.03},baseDura:75,baseVal:35},{id:"blessed_blade",name:"祝福长剑",type:"weapon",rarity:"rare",baseStats:{atk:8,crit:0.05},baseDura:100,baseVal:80},{id:"soul_reaper",name:"夺魂之镰",type:"weapon",rarity:"epic",baseStats:{atk:12,crit:0.08},baseDura:120,baseVal:200},{id:"abyss_edge",name:"深渊之锋",type:"weapon",rarity:"legendary",baseStats:{atk:18,crit:0.12},baseDura:150,baseVal:500},
+{id:"cloth_hood",name:"布兜帽",type:"head",rarity:"common",baseStats:{sanityResist:0.05},baseDura:70,baseVal:10},{id:"iron_helm",name:"铁盔",type:"head",rarity:"uncommon",baseStats:{def:2,sanityResist:0.08},baseDura:100,baseVal:25},{id:"silver_circlet",name:"银冠",type:"head",rarity:"rare",baseStats:{sanityResist:0.15,maxSanity:10},baseDura:90,baseVal:60},{id:"void_crown",name:"虚空之冠",type:"head",rarity:"epic",baseStats:{sanityResist:0.22,darkPower:0.08},baseDura:110,baseVal:160},
+{id:"leather_vest",name:"皮革背心",type:"body",rarity:"common",baseStats:{def:2,maxHp:8},baseDura:100,baseVal:12},{id:"chainmail",name:"锁子甲",type:"body",rarity:"uncommon",baseStats:{def:4,maxHp:15},baseDura:120,baseVal:30},{id:"iron_plate",name:"铁板铠",type:"body",rarity:"rare",baseStats:{def:6,maxHp:25},baseDura:150,baseVal:70},{id:"blessed_robe",name:"祝福长袍",type:"body",rarity:"epic",baseStats:{def:3,maxHp:20,sanityResist:0.1},baseDura:100,baseVal:160},{id:"abyss_cage",name:"深渊囚笼",type:"body",rarity:"legendary",baseStats:{def:10,maxHp:40,darkPower:0.15},baseDura:180,baseVal:420},
+{id:"worn_gloves",name:"旧手套",type:"hands",rarity:"common",baseStats:{crit:0.02},baseDura:60,baseVal:8},{id:"iron_gauntlets",name:"铁护手",type:"hands",rarity:"uncommon",baseStats:{atk:2,crit:0.04},baseDura:80,baseVal:22},{id:"shadow_bracers",name:"暗影护腕",type:"hands",rarity:"rare",baseStats:{atk:3,crit:0.07},baseDura:90,baseVal:55},{id:"fate_grip",name:"命运之握",type:"hands",rarity:"epic",baseStats:{atk:5,crit:0.10},baseDura:100,baseVal:150},
+{id:"rope_belt",name:"绳带",type:"waist",rarity:"common",baseStats:{bagSlots:3},baseDura:80,baseVal:12},{id:"leather_belt",name:"皮带",type:"waist",rarity:"uncommon",baseStats:{bagSlots:5},baseDura:90,baseVal:28},{id:"pouch_girdle",name:"囊袋腰带",type:"waist",rarity:"rare",baseStats:{bagSlots:8,goldMult:0.05},baseDura:100,baseVal:55},{id:"abyss_sash",name:"渊带",type:"waist",rarity:"epic",baseStats:{bagSlots:12,goldMult:0.10},baseDura:110,baseVal:140},
+{id:"old_boots",name:"旧靴",type:"feet",rarity:"common",baseStats:{dodge:0.03},baseDura:80,baseVal:10},{id:"iron_greaves",name:"铁胫甲",type:"feet",rarity:"uncommon",baseStats:{def:1,dodge:0.05},baseDura:100,baseVal:24},{id:"silent_sandals",name:"消声便鞋",type:"feet",rarity:"rare",baseStats:{dodge:0.08,spawnReduce:0.10},baseDura:80,baseVal:50},{id:"shadow_striders",name:"影行之靴",type:"feet",rarity:"epic",baseStats:{dodge:0.12,spawnReduce:0.18},baseDura:90,baseVal:140},
+{id:"torn_cloak",name:"破旧披风",type:"cloak",rarity:"common",baseStats:{torchSave:0.06},baseDura:70,baseVal:10},{id:"waxed_mantle",name:"蜡浸斗篷",type:"cloak",rarity:"uncommon",baseStats:{torchSave:0.12},baseDura:80,baseVal:25},{id:"shadow_shroud",name:"暗影裹尸布",type:"cloak",rarity:"rare",baseStats:{torchSave:0.10,darkPower:0.12},baseDura:90,baseVal:58},{id:"flame_cloak",name:"不灭之焰",type:"cloak",rarity:"epic",baseStats:{torchSave:0.20,maxTorchBonus:10},baseDura:100,baseVal:155},
+{id:"bone_charm",name:"骨符",type:"relic",rarity:"common",baseStats:{atk:1,def:1},baseDura:50,baseVal:12},{id:"candle_ember",name:"烛火余烬",type:"relic",rarity:"uncommon",baseStats:{torchSave:0.05,healOnKill:2},baseDura:55,baseVal:30},{id:"void_eye",name:"虚空之眼",type:"relic",rarity:"rare",baseStats:{crit:0.05,darkPower:0.10},baseDura:60,baseVal:65},{id:"phoenix_feather",name:"凤凰翎羽",type:"relic",rarity:"legendary",baseStats:{revive:1,healOnKill:5},baseDura:50,baseVal:600}];
+
+const MATERIAL_TEMPLATES=[{id:"bone_shard",name:"骨片",rarity:"common",baseVal:3},{id:"soul_ember",name:"魂火余烬",rarity:"uncommon",baseVal:8},{id:"dark_iron",name:"暗铁碎片",rarity:"rare",baseVal:22},{id:"abyss_essence",name:"深渊精华",rarity:"epic",baseVal:65},{id:"ancient_core",name:"古渊之核",rarity:"legendary",baseVal:200}];
+
+const LAYERS=[
+{index:0,name:"浅层回廊",startDepth:0,maxDepth:70,monsters:["巨鼠","白骨犬","苔衣尸","洞穴蝠","断指盗"],spot:["黑暗中传来窸窣爬行声…","脚下的碎骨咯吱作响。","有什么东西正在墙角窥视你。"],danger:"⚔️",unlockMsg:null,unlockBonus:null},
+{index:1,name:"中层甬道",startDepth:70,maxDepth:160,monsters:["锈甲卫","低语尸祝","石隙蛛","断头骑士","缚魂傀儡"],spot:["甲胄摩擦的声响由远及近。","低语声顺着石缝钻进耳中。","空气开始发涩，带着铁锈味。"],danger:"⚔️⚔️",unlockMsg:"曾到达浅层回廊最深处（70尺）",unlockBonus:"头部+腰部槽位解锁"},
+{index:2,name:"深层墓室",startDepth:160,maxDepth:280,monsters:["影食者","泣血修女","无面祭司","深渊触手","铁笼囚魂"],spot:["空气骤然发冷，低语萦绕耳畔。","你的影子似乎慢了半拍。","某种目光穿透了黑暗。"],danger:"⚔️⚔️⚔️",unlockMsg:"曾到达中层甬道最深处（160尺）",unlockBonus:"披风槽位解锁"},
+{index:3,name:"绝渊回廊",startDepth:280,maxDepth:999,monsters:["王座囚魂","古渊之眼","弃神残躯","永夜使者","万骨之影"],spot:["整条回廊仿佛屏住了呼吸。","连火光都在退缩。","这里没有回声，只有等待。"],danger:"⚔️⚔️⚔️⚔️",unlockMsg:"曾到达深层墓室最深处（280尺）",unlockBonus:"圣物槽位+酒馆解锁"}];
+
+const EXPLORATION_EVENTS=[{type:"curio",name:"古老烛台",layers:[0,1,2,3],safe:{text:"点燃残烛",effect:"torch",val:18,log:"烛光陡然明亮，火把恢复了些许。"},risky:{text:"刮取烛泪",effect:"gold",val:35,riskChance:0.25,riskEffect:"sanityPenalty",riskVal:8,log:"烛泪中凝着古老的金粉，值些钱。",riskLog:"烛泪溅到手上，灼痛直钻骨髓……"}},{type:"curio",name:"封尘的书架",layers:[1,2,3],safe:{text:"整理书籍",effect:"sanity",val:10,log:"翻阅古籍让心神平静。"},risky:{text:"撕下书页",effect:"relic_chance",val:0.15,riskChance:0.35,riskEffect:"curse_spawn",riskVal:0,log:"书页间夹着一张泛黄的护符！",riskLog:"撕书声在回廊中回荡……什么东西被惊醒了。"}},{type:"curio",name:"锈蚀的铁棺",layers:[2,3],safe:{text:"保持距离",effect:"torch",val:10,log:"你远远绕开了铁棺。"},risky:{text:"撬开棺盖",effect:"equip_drop",val:1,riskChance:0.4,riskEffect:"hpLoss",riskVal:15,log:"棺中躺着一件完好的装备！",riskLog:"棺中窜出毒雾，呛得你连连后退。"}},{type:"trap",name:"塌陷的石板",layers:[0,1,2,3],safe:{text:"绕行",effect:"depth_cost",val:0.6,log:"你多绕了一段路。"},risky:{text:"跳过去",effect:"skip",val:0,riskChance:0.3,riskEffect:"hpLoss",riskVal:10,log:"你稳稳落地。",riskLog:"石板碎裂，你跌了一跤。"}},{type:"trap",name:"蛛网密布的窄道",layers:[0,1,2,3],safe:{text:"烧掉蛛网",effect:"torch_cost",val:8,log:"火把烧尽了蛛网。"},risky:{text:"挤过去",effect:"gold",val:25,riskChance:0.35,riskEffect:"sanityPenalty",riskVal:12,log:"蛛网后藏着一小堆金币！",riskLog:"蛛丝黏在皮肤上，细碎的爬行感久久不散……"}},{type:"trap",name:"低语的裂隙",layers:[1,2,3],safe:{text:"捂住耳朵",effect:"skip",val:0,log:"你快步通过了裂隙。"},risky:{text:"凑近倾听",effect:"knowledge_fragment",val:1,riskChance:0.4,riskEffect:"sanityPenalty",riskVal:20,log:"你听懂了一个古老的名字……",riskLog:"低语灌入脑中，头像要裂开一般。"}},{type:"narrative",text:"墙上的刻字：『第四个已经死了，而我还在数。』",effect:"sanityPenalty",val:3,layers:[0,1,2,3]},{type:"narrative",text:"地上散落着断裂的指甲，每一片都指向同一个方向。",effect:"sanityPenalty",val:4,layers:[1,2,3]},{type:"narrative",text:"你看见了自己的背影——不是倒影，它就站在十步之外。",effect:"sanityPenalty",val:8,layers:[2,3]},{type:"narrative",text:"一朵发光的白花从石缝中长出。在这深渊中，生命本身即是奇迹。",effect:"sanity",val:5,layers:[0,1,2,3]},{type:"narrative",text:"脚下的碎石拼成了一行字：『回头。现在还来得及。』",effect:"skip",val:0,layers:[0,1,2,3]},{type:"narrative",text:"石壁上浮现出一段既熟悉又陌生的记忆——那是你第一次握剑的手。",effect:"sanity",val:8,layers:[1,2,3]},{type:"rest",name:"残破的神龛",layers:[0,1,2,3],safe:{text:"静坐祈祷",effect:"sanity",val:18,log:"你感觉心神安定了许多。"},risky:{text:"搜刮供品",effect:"gold",val:50,riskChance:0.3,riskEffect:"cursed_debuff",riskVal:0,log:"供盘中有不少金币。",riskLog:"你感到某种目光落在了背上……下次遇怪概率大幅提升。"}},{type:"rest",name:"地底温泉",layers:[1,2,3],safe:{text:"浸泡疗伤",effect:"heal",val:12,log:"温泉水温润了伤口。"},risky:{text:"搜寻泉底",effect:"material_drop",val:1,riskChance:0.3,riskEffect:"hpLoss",riskVal:8,log:"泉底沉着几块暗铁碎片！",riskLog:"泉水突然沸腾，烫伤了你的腿。"}}];
+
+const SKILLS=[{id:"berserk",name:"猛击",desc:"下次攻击伤害×2.5",costType:"sanity",cost:10,type:"nextAttack",buffKey:"berserk",duration:0,value:2.5},{id:"block",name:"格挡",desc:"10秒内防御+6",costType:"sanity",cost:15,type:"buff",buffKey:"block",duration:10,value:6},{id:"flamethrow",name:"点燃投掷",desc:"消耗火把造成火焰伤害",costType:"torch",cost:8,type:"instant",buffKey:null,duration:0,value:0},{id:"focus",name:"凝神屏息",desc:"暂停神智消耗5秒",costType:"none",cost:0,type:"buff",buffKey:"focus",duration:5,value:0,cooldown:30},{id:"allin",name:"孤注一掷",desc:"8秒内暴击率+35%",costType:"hp",cost:20,type:"buff",buffKey:"allin",duration:8,value:0.35},{id:"inspire",name:"振奋",desc:"清除自身减益",costType:"none",cost:0,type:"raceSkill",buffKey:"inspire",duration:0,value:0,cooldown:60,race:"human"},{id:"forestStep",name:"林间步",desc:"触发探索事件",costType:"sanity",cost:10,type:"raceSkill",buffKey:"forestStep",duration:0,value:0,cooldown:120,race:"elf"},{id:"roar",name:"咆哮",desc:"恐惧怪物一回合",costType:"sanity",cost:15,type:"raceSkill",buffKey:"roar",duration:0,value:0,cooldown:45,race:"bear"},{id:"mountainHeart",name:"山之心",desc:"8秒减伤50%",costType:"sanity",cost:20,type:"buff",buffKey:"mountainHeart",duration:8,value:0.5,cooldown:90,race:"dwarf"}];
+
+const BLESSINGS=[{id:"atk",name:"征战祝福",desc:"攻击力 +20%",icon:"⚔️",apply:(s)=>s.atk=Math.round(s.atk*1.2)},{id:"def",name:"坚韧祝福",desc:"生命上限 +20%",icon:"🛡",apply:(s)=>s.maxHp=Math.round(s.maxHp*1.2)},{id:"sanity",name:"清醒祝福",desc:"神智消耗 -35%",icon:"🧠",apply:(s)=>s.sanityResist=Math.min(0.8,s.sanityResist+0.35)},{id:"torch",name:"光明祝福",desc:"火把消耗 -25%",icon:"🕯️",apply:(s)=>s.torchBlessingMul=0.75},{id:"gold",name:"贪婪祝福",desc:"金币获取 +30%",icon:"💰",apply:(s)=>s.goldMul+=0.30},{id:"crit",name:"锐眼祝福",desc:"暴击率 +12%",icon:"👁️",apply:(s)=>s.crit+=0.12}];
+
+const SHOP_ITEMS=[{id:"torch_oil",name:"火把油",desc:"火把恢复+25",icon:"🔥",price:30,maxCarry:3,effect:"torch",value:25},{id:"bandage",name:"急救绷带",desc:"生命恢复+20",icon:"🩹",price:25,maxCarry:2,effect:"heal",value:20},{id:"sedative",name:"镇静药剂",desc:"神智恢复+20",icon:"🧪",price:35,maxCarry:2,effect:"sanity",value:20},{id:"antidote",name:"解毒剂",desc:"移除诅咒debuff",icon:"⚗️",price:20,maxCarry:1,effect:"cleansCurse",value:0},{id:"holy_water",name:"圣水",desc:"下次攻击×1.5",icon:"✨",price:40,maxCarry:1,effect:"holyWater",value:1.5},{id:"firebomb",name:"火药瓶",desc:"造成30点火焰伤害",icon:"💣",price:50,maxCarry:1,effect:"firebomb",value:30}];
+
+const QUEST_POOL=[{id:"kill_rats",name:"清除鼠患",desc:"击败巨鼠",type:"kill",monster:"巨鼠",count:6,gold:100,timeLimit:12},{id:"kill_dogs",name:"白骨猎杀",desc:"击败白骨犬",type:"kill",monster:"白骨犬",count:5,gold:120,timeLimit:14},{id:"depth_20",name:"小试身手",desc:"一次远征中到达20尺深处",type:"depth",target:20,gold:80,timeLimit:15,itemReward:{tid:"rusty_sword"}},{id:"kill_rust",name:"锈蚀之敌",desc:"击败锈甲卫",type:"kill",monster:"锈甲卫",count:4,gold:180,timeLimit:14,needLayer:1},{id:"depth_100",name:"深渊行者",desc:"到达100尺深处",type:"depth",target:100,gold:250,timeLimit:20,itemReward:{tid:"ritual_dagger"}},{id:"kill_shadow",name:"影中猎手",desc:"击败影食者",type:"kill",monster:"影食者",count:3,gold:300,timeLimit:16,needLayer:2},{id:"collect_bones",name:"收集骨片",desc:"在远征中收集3个骨片",type:"collect",material:"骨片",count:3,gold:90,timeLimit:18},{id:"collect_ember",name:"魂火收集",desc:"收集2个魂火余烬",type:"collect",material:"魂火余烬",count:2,gold:150,timeLimit:20,needLayer:1},{id:"survive_5m",name:"坚韧不拔",desc:"在一次远征中持续探索（游戏内5分钟）",type:"survive",minutes:5,gold:130,timeLimit:22},{id:"kill_priest",name:"沉默祭司",desc:"击败无面祭司",type:"kill",monster:"无面祭司",count:2,gold:400,timeLimit:18,needLayer:2,itemReward:{tid:"silver_circlet"}},{id:"depth_200",name:"深层探索",desc:"到达200尺深处",type:"depth",target:200,gold:500,timeLimit:25,needLayer:2},{id:"kill_king",name:"王者陨落",desc:"击败王座囚魂",type:"kill",monster:"王座囚魂",count:1,gold:800,timeLimit:20,needLayer:3,itemReward:{tid:"abyss_edge"}}];
+
+const CRAFT_RECIPES=[{id:"craft_ritual",name:"仪式匕首",result:{tid:"ritual_dagger"},cost:25,materials:[{mid:"bone_shard",qty:3},{mid:"soul_ember",qty:1}],needLayer:0},{id:"craft_chainmail",name:"锁子甲",result:{tid:"chainmail"},cost:20,materials:[{mid:"bone_shard",qty:4}],needLayer:0},{id:"craft_gloves",name:"铁护手",result:{tid:"iron_gauntlets"},cost:18,materials:[{mid:"bone_shard",qty:2},{mid:"soul_ember",qty:1}],needLayer:0},{id:"craft_blessed",name:"祝福长剑",result:{tid:"blessed_blade"},cost:60,materials:[{mid:"dark_iron",qty:3},{mid:"soul_ember",qty:2}],needLayer:1},{id:"craft_iron",name:"铁板铠",result:{tid:"iron_plate"},cost:55,materials:[{mid:"dark_iron",qty:4},{mid:"bone_shard",qty:2}],needLayer:1},{id:"craft_helm",name:"银冠",result:{tid:"silver_circlet"},cost:48,materials:[{mid:"dark_iron",qty:2},{mid:"soul_ember",qty:2}],needLayer:1},{id:"craft_soul",name:"夺魂之镰",result:{tid:"soul_reaper"},cost:150,materials:[{mid:"dark_iron",qty:5},{mid:"abyss_essence",qty:2}],needLayer:2},{id:"craft_bracers",name:"暗影护腕",result:{tid:"shadow_bracers"},cost:110,materials:[{mid:"dark_iron",qty:3},{mid:"abyss_essence",qty:1}],needLayer:2},{id:"craft_cloak",name:"暗影裹尸布",result:{tid:"shadow_shroud"},cost:120,materials:[{mid:"abyss_essence",qty:2},{mid:"soul_ember",qty:3}],needLayer:2},{id:"craft_dragonCloak",name:"不灭之焰",result:{tid:"flame_cloak"},cost:260,materials:[{mid:"ancient_core",qty:2},{mid:"abyss_essence",qty:2}],needLayer:3},{id:"craft_phoenix",name:"凤凰翎羽",result:{tid:"phoenix_feather"},cost:450,materials:[{mid:"ancient_core",qty:3},{mid:"dark_iron",qty:5}],needLayer:3},{id:"craft_abyss_edge",name:"深渊之锋",result:{tid:"abyss_edge"},cost:380,materials:[{mid:"ancient_core",qty:2},{mid:"abyss_essence",qty:4}],needLayer:3}];
+
+const RELICS=[{id:"blade",name:"断裂的军刀",desc:"攻击 +2",apply:h=>h.baseAtk+=2},{id:"mirror",name:"锈蚀护心镜",desc:"防御 +2",apply:h=>h.baseDef+=2},{id:"wax",name:"陈年烛脂",desc:"火把消耗 -8%",apply:h=>h.torchDrainMult*=0.92},{id:"neck",name:"亡者的项链",desc:"神智上限 +15",apply:h=>h.maxSanity+=15},{id:"dice",name:"贪婪的骰子",desc:"金币获取 +10%",apply:h=>h.goldMult*=1.10},{id:"note",name:"缝合的手记",desc:"生命上限 +20",apply:h=>h.maxHp+=20},{id:"coin",name:"幸运银币",desc:"暴击率 +5%",apply:h=>h.critChance+=0.05},{id:"wick",name:"不熄的灯芯",desc:"火把上限 +15",apply:h=>h.maxTorchBonus+=15}];
+
+function freshState(){return{hero:{weaponLvl:0,armorLvl:0,torchLvl:0,baseAtk:8,baseDef:2,maxHp:50,hp:50,maxSanity:100,sanity:100,maxTorchBonus:0,torchDrainMult:1,goldMult:1,critChance:0.05,sanityResist:0,darkPower:0,revive:0,baseDodge:0,eventRewardMul:1,smithCostMul:1,race:"human"},gold:0,maxDepthRecord:0,bestiary:{},relicsOwned:{},inventory:[],equipment:{weapon:null,head:null,body:null,hands:null,waist:null,feet:null,cloak:null,relic:null},equipSlots:4,bagCapacity:20,activeQuests:[],completedQuestIds:[],questRefreshAt:0,unlockedLayers:[0],selectedLayer:0,unlockedRaces:["human"],craftsMade:0,prayerCooldown:0,activeBlessing:null,warehouse:[],warehouseSlots:20,expedition:{active:false,depth:0,maxDepthReached:0,torch:100,maxTorch:100,monster:null,carriedGold:0,layerIndex:0,itemsFound:[],surviveMinutes:0,surviveTick:0,event:null,skillCooldowns:{},activeBuffs:{},consumables:{},_expeditionEvents:0},lastTs:Date.now(),logs:[]}}
+
+let S=load();
+function load(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return freshState();const parsed=JSON.parse(raw);const fresh=freshState();const merged=Object.assign(fresh,parsed,{hero:Object.assign(fresh.hero,parsed.hero||{}),equipment:Object.assign(fresh.equipment,parsed.equipment||{}),expedition:Object.assign(fresh.expedition,parsed.expedition||{})});if(!merged.equipment)merged.equipment={weapon:null,head:null,body:null,hands:null,waist:null,feet:null,cloak:null,relic:null};if(merged.equipment.armor!==undefined&&merged.equipment.body===undefined){merged.equipment.body=merged.equipment.armor||null;delete merged.equipment.armor}if(merged.equipment.accessory1!==undefined){if(!merged.equipment.relic)merged.equipment.relic=merged.equipment.accessory1||null;delete merged.equipment.accessory1}if(merged.equipment.accessory2!==undefined){merged.inventory=merged.inventory||[];if(merged.equipment.accessory2)merged.inventory.push(merged.equipment.accessory2);delete merged.equipment.accessory2}["head","hands","waist","feet","cloak"].forEach(k=>{if(!(k in merged.equipment))merged.equipment[k]=null});if(merged.equipSlots===undefined||merged.equipSlots<4)merged.equipSlots=4;if(merged.bagCapacity===undefined)merged.bagCapacity=20;if(merged.prayerCooldown===undefined)merged.prayerCooldown=0;if(merged.activeBlessing===undefined)merged.activeBlessing=null;if(!merged.warehouse)merged.warehouse=[];if(merged.warehouseSlots===undefined)merged.warehouseSlots=20;if(!merged.activeQuests)merged.activeQuests=[];if(!merged.unlockedLayers)merged.unlockedLayers=[0];if(!merged.selectedLayer)merged.selectedLayer=0;
+    if(!merged.unlockedRaces)merged.unlockedRaces=["human"];if(merged.craftsMade===undefined)merged.craftsMade=0;if(!merged.questRefreshAt)merged.questRefreshAt=0;if(!merged.completedQuestIds)merged.completedQuestIds=[];if(merged.expedition&&merged.expedition.maxDepthReached===undefined)merged.expedition.maxDepthReached=0;if(merged.expedition&&merged.expedition.itemsFound===undefined)merged.expedition.itemsFound=[];if(merged.expedition&&merged.expedition.surviveTick===undefined)merged.expedition.surviveTick=0;if(!merged.hero.race)merged.hero.race="human";if(merged.hero.baseDodge===undefined)merged.hero.baseDodge=0;if(merged.hero.eventRewardMul===undefined)merged.hero.eventRewardMul=1;if(merged.hero.smithCostMul===undefined)merged.hero.smithCostMul=1;return merged}catch(e){return freshState()}}
+function save(){if(S._deleting)return;S.lastTs=Date.now();localStorage.setItem(SAVE_KEY,JSON.stringify(S))}
+function el(id){return document.getElementById(id)}
+
+/* ========== 种族数据 ========== */
+const RACES=[
+  {id:"human",name:"人类",title:"韧性的守望者",icon:"👤",color:"var(--candle)",bg:"rgba(232,166,89,0.08)",
+   stats:"均衡 · 无短板",statsDetail:"攻击 8 · 防御 2 · 生命 50 · 神智 100 · 无偏移",
+   passive:"韧性｜远征结束后神智自动恢复 25%，再计算惩罚。走得再远，也回得来。",
+   skill:"振奋｜无消耗，清除自身所有主动减益效果（冷却 60 秒）",
+   quote:"深渊吞噬了多少人，但总有那么几个，握着火把又走了回来。",
+   unlocked:true,
+   apply(h){}},
+  {id:"elf",name:"精灵",title:"深渊感知者",icon:"🧝",color:"#c0d0e0",bg:"rgba(192,208,224,0.08)",
+   stats:"感知特化 · 高神智",statsDetail:"攻击 -1 · 防御 2 · 生命 50 · 神智 +20 · 火把消耗 -15%",
+   passive:"深邃感知｜探索事件安全选项奖励 ×1.3；事件触发率 +3%。深渊在你耳中低语。",
+   skill:"林间步｜消耗 10 神智，下一次行动必定触发探索事件（冷却 120 秒）",
+   quote:"你们听到了嘶吼。我听到了千年前这片岩壁上的回声。",
+   unlocked:false,unlockCond:"一次远征中触发 3 个探索事件",
+   apply(h){h.baseAtk-=1;h.maxSanity+=20;h.torchDrainMult=0.85;h.eventRewardMul=1.3}},
+  {id:"bear",name:"熊人",title:"血怒狂战士",icon:"🐻",color:"var(--blood-bright)",bg:"rgba(192,90,69,0.08)",
+   stats:"狂暴特化 · 高攻高血",statsDetail:"攻击 +3 · 防御 +1 · 生命 +30 · 神智 -25",
+   passive:"血怒｜神智低于 30% 时，攻击力 ×1.4、暴击率 +10%，但无法使用技能。",
+   skill:"咆哮｜消耗 15 神智，怪物恐惧一回合无法攻击（冷却 45 秒）",
+   quote:"他们说他疯了。他只是学会了和深渊里的东西，用同一种语言交流。",
+   unlocked:false,unlockCond:"神智低于 20% 状态下击败一只怪物",
+   apply(h){h.baseAtk+=3;h.baseDef+=1;h.maxHp+=30;h.maxSanity-=25}},
+  {id:"dwarf",name:"矮人",title:"锻炉血脉",icon:"⛏️",color:"var(--copper)",bg:"rgba(138,106,79,0.08)",
+   stats:"防御特化 · 锻造天赋",statsDetail:"攻击 +2 · 防御 +4 · 生命 +5 · 神智 100 · 闪避 -5%",
+   passive:"锻炉血脉｜铁匠鉴定和打造费用 -30%；打造材料需求 -1。深渊里有矿。",
+   skill:"山之心｜消耗 20 神智，8 秒内受到伤害减免 50%（冷却 90 秒）",
+   quote:"深渊里有黑暗、有怪物、还有矿。矮人只在乎第三件事。",
+   unlocked:false,unlockCond:"累计打造 3 件装备",
+   apply(h){h.baseAtk+=2;h.baseDef+=4;h.maxHp+=5;h.baseDodge=-0.05;h.smithCostMul=0.7}}
+];
+let raceIdx=0; // 当前轮播位置
+
+function calcHeroStats(){const h=S.hero,eq=S.equipment;let atk=h.baseAtk,def=h.baseDef,maxHp=h.maxHp;let crit=h.critChance,torchSave=0,sanityResist=h.sanityResist||0;let goldMul=h.goldMult,darkPower=h.darkPower||0,revive=h.revive||0;let dodge=h.baseDodge||0,bagSlots=0,spawnReduce=0,healOnKill=0,maxSanityBonus=0;Object.values(eq).forEach(item=>{if(!item||item.durability<=0)return;const s=item.stats;if(s.atk)atk+=s.atk;if(s.def)def+=s.def;if(s.maxHp)maxHp+=s.maxHp;if(s.crit)crit+=s.crit;if(s.torchSave)torchSave+=s.torchSave;if(s.sanityResist)sanityResist+=s.sanityResist;if(s.goldMult)goldMul+=s.goldMult;if(s.darkPower)darkPower+=s.darkPower;if(s.revive)revive+=s.revive;if(s.dodge)dodge+=s.dodge;if(s.bagSlots)bagSlots+=s.bagSlots;if(s.spawnReduce)spawnReduce+=s.spawnReduce;if(s.healOnKill)healOnKill+=s.healOnKill;if(s.maxSanity)maxSanityBonus+=s.maxSanity});const result={atk,def,maxHp,crit,torchSave,sanityResist,goldMul,darkPower,revive,dodge,bagSlots,spawnReduce,healOnKill,maxSanityBonus,torchBlessingMul:1};if(S.activeBlessing)S.activeBlessing.apply(result);return result}
+function getBagCapacity(){const s=calcHeroStats();return S.bagCapacity+s.bagSlots}
+function heroMaxTorchBase(){return 100+S.hero.maxTorchBonus}
+function pushLog(text,cls){S.logs.unshift({text,cls:cls||""});if(S.logs.length>80)S.logs.length=80}
+
+function generateItem(depth,layerIdx){const roll=Math.random();if(roll<0.60)return generateMaterial(depth,layerIdx);if(roll<0.90)return generateEquip(depth,layerIdx,false);return generateEquip(depth,layerIdx,true)}
+function generateMaterial(depth,layerIdx){const maxRarityIdx=Math.min(4,Math.floor(layerIdx/1)+1);const avail=MATERIAL_TEMPLATES.filter(m=>["common","uncommon","rare","epic","legendary"].indexOf(m.rarity)<=maxRarityIdx);const tpl=avail[Math.floor(Math.random()*avail.length)];return{id:tpl.id+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,6),templateId:tpl.id,name:tpl.name,type:"material",rarity:tpl.rarity,stats:{},durability:999,maxDurability:999,sellPrice:Math.round(tpl.baseVal*(0.85+Math.random()*0.3)),unidentified:false}}
+function generateEquip(depth,layerIdx,unidentified){const maxRarityIdx=Math.min(4,Math.floor(layerIdx/1)+1);const avail=EQUIP_TEMPLATES.filter(e=>["common","uncommon","rare","epic","legendary"].indexOf(e.rarity)<=maxRarityIdx);const tpl=avail[Math.floor(Math.random()*avail.length)];const dur=Math.round(tpl.baseDura*(0.7+Math.random()*0.6));const stats={};Object.entries(tpl.baseStats).forEach(([k,v])=>{stats[k]=v});return{id:tpl.id+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,6),templateId:tpl.id,name:unidentified?"未鉴定的装备":tpl.name,type:tpl.type,rarity:tpl.rarity,stats,durability:dur,maxDurability:dur,sellPrice:Math.round(tpl.baseVal*(0.85+Math.random()*0.3)),unidentified}}
+function pickMonster(depth,layerIdx){const layer=LAYERS[layerIdx];const name=layer.monsters[Math.floor(Math.random()*layer.monsters.length)];const scale=1+(depth-layer.startDepth)*0.12+Math.random()*0.25;const hpBase=14+layerIdx*10;const atkBase=3+layerIdx*2.4;return{name,hp:Math.round(hpBase*scale),maxHp:Math.round(hpBase*scale),atk:Math.round(atkBase*scale)}}
+function spotLine(depth){const layer=LAYERS.find(l=>depth>=l.startDepth&&depth<l.maxDepth)||LAYERS[LAYERS.length-1];return layer.spot[Math.floor(Math.random()*layer.spot.length)]}
+
+function startExpedition(layerIdx){const layer=LAYERS[layerIdx];const stats=calcHeroStats();S.hero.hp=stats.maxHp;const savedConsumables=S.expedition.consumables||{};S.expedition={active:true,depth:layer.startDepth,maxDepthReached:layer.startDepth,torch:heroMaxTorchBase(),maxTorch:heroMaxTorchBase(),monster:null,carriedGold:0,layerIndex:layerIdx,itemsFound:[],surviveMinutes:0,surviveTick:0,event:null,skillCooldowns:{},activeBuffs:{},consumables:savedConsumables,_expeditionEvents:0};pushLog(`你踏入${layer.name}，火把照亮前方……`,"dim");switchToExpedition();render();save()}
+function endExpedition(reason,losePercent,sanityPenalty){const ex=S.expedition;const banked=Math.floor(ex.carriedGold*(1-losePercent));S.gold+=banked;const s2=calcHeroStats();const effMaxSan=S.hero.maxSanity+s2.maxSanityBonus;if(S.hero.race==="human")S.hero.sanity=Math.min(effMaxSan,S.hero.sanity+Math.floor(effMaxSan*0.25));S.hero.sanity=Math.max(0,S.hero.sanity-sanityPenalty);if(ex.maxDepthReached>S.maxDepthRecord)S.maxDepthRecord=ex.maxDepthReached;S.hero.hp=calcHeroStats().maxHp;ex.itemsFound.forEach(item=>{if(S.inventory.length>=getBagCapacity()){const minItem=S.inventory.reduce((a,b)=>(a.sellPrice<b.sellPrice)?a:b,S.inventory[0]);if(minItem&&(!item.sellPrice||item.sellPrice>(minItem.sellPrice||0))){S.gold+=Math.floor(minItem.sellPrice||1);S.inventory.splice(S.inventory.indexOf(minItem),1);S.inventory.push(item)}else{S.gold+=Math.floor(item.sellPrice||1);pushLog(`背包已满，${item.name}被自动出售。`,"dim")}}else S.inventory.push(item)});updateQuestOnEnd(ex);checkLayerUnlock(ex.layerIndex,ex.maxDepthReached);const reasons={death:`你倒在了黑暗中，被残存的意志拖回营地。带回 ${banked} 金。`,torch:`火把燃尽，你在漆黑中摸索着退回营地。带回 ${banked} 金。`,sanity:`心神崩溃，你踉跄逃出回廊。带回 ${banked} 金。`,manual:`你安全撤回营地，带回了 ${banked} 金。`};const cls=reason==="manual"?"good":"warn";pushLog(reasons[reason]||reasons.manual,cls);ex.active=false;ex.monster=null;ex.carriedGold=0;ex.depth=0;ex.itemsFound=[];ex.event=null;ex._cursedSpawn=false;ex.skillCooldowns={};ex.activeBuffs={};ex.consumables={};if((ex._expeditionEvents||0)>=3)unlockRace("elf");S.activeBlessing=null;switchToCamp()}
+function stepTick(silent){const ex=S.expedition,h=S.hero;if(!ex.active)return;ex.surviveTick++;if(ex.surviveTick>=60){ex.surviveMinutes++;ex.surviveTick=0}const darkness=1-ex.torch/ex.maxTorch;const layerStart=LAYERS[ex.layerIndex]?LAYERS[ex.layerIndex].startDepth:0;const stats=calcHeroStats();const torchDrain=(0.6+(ex.depth-layerStart)*0.012)*h.torchDrainMult*stats.torchBlessingMul;ex.torch=Math.max(0,ex.torch-torchDrain);const sanityDrainBase=0.08+darkness*0.20;const sanityDrain=ex.activeBuffs.focus?0:sanityDrainBase*(1-stats.sanityResist);h.sanity=Math.max(0,h.sanity-sanityDrain);if(ex.torch<=0){endExpedition("torch",0.4,15);return}if(h.sanity<=0){endExpedition("sanity",0.45,0);return}if(!ex.monster){if(ex.event){return}if(!silent||ex._forceEvent){const eventChance=ex._forceEvent?1:0.05+darkness*0.04;ex._forceEvent=false;if(Math.random()<eventChance){const avail=EXPLORATION_EVENTS.filter(ev=>ev.layers.includes(ex.layerIndex));if(avail.length>0){const ev=avail[Math.floor(Math.random()*avail.length)];ex.event={...ev,id:Date.now()};if(ev.type==="narrative"){pushLog(ev.text,"dim");resolveEvent("narrative")}return}}}const baseSpawn=0.25+darkness*0.40-stats.spawnReduce;const cursedBonus=ex._cursedSpawn?0.40:0;const spawnChance=Math.min(0.90,Math.max(0.10,baseSpawn+cursedBonus));if(Math.random()<spawnChance){ex.monster=pickMonster(ex.depth,ex.layerIndex);ex._cursedSpawn=false;if(!silent)pushLog(`${spotLine(ex.depth)} —— ${ex.monster.name} 出现了。`,"dim")}if(!ex.monster&&Math.random()<0.08){const adv=0.3+darkness*0.3;ex.depth=Math.min(ex.depth+adv,LAYERS[ex.layerIndex].maxDepth);if(ex.depth>ex.maxDepthReached)ex.maxDepthReached=ex.depth}return}const m=ex.monster;const fearFactor=h.sanity<25?1.25:1;const skipAttack=h.sanity<15&&Math.random()<0.15;const bloodrageActive=h.race==="bear"&&h.sanity<h.maxSanity*0.3;const bloodrageMul=bloodrageActive?1.4:1;const berserkMul=ex.activeBuffs.berserk||1;const holyWaterMul=ex.activeBuffs.holyWater||1;const blockDef=(ex.activeBuffs.block&&typeof ex.activeBuffs.block==='object')?ex.activeBuffs.block.value:0;const mhDef=(ex.activeBuffs.mountainHeart&&typeof ex.activeBuffs.mountainHeart==='object')?ex.activeBuffs.mountainHeart.value:0;const allinCrit=(ex.activeBuffs.allin&&typeof ex.activeBuffs.allin==='object')?ex.activeBuffs.allin.value:0;if(!skipAttack){const isCrit=Math.random()<(stats.crit+allinCrit+(bloodrageActive?0.10:0));let dmg=stats.atk*(0.85+Math.random()*0.3);if(isCrit)dmg*=1.8;dmg=Math.round(dmg*berserkMul*holyWaterMul*bloodrageMul*(1+stats.darkPower*darkness));if(!silent&&isCrit)pushLog(`会心一击！你对${m.name}造成 ${Math.round(dmg)} 点伤害。`,"good");if(!silent&&berserkMul>1)pushLog("💥 猛击爆发！","good");m.hp-=dmg;if(berserkMul>1)delete ex.activeBuffs.berserk;if(holyWaterMul>1)delete ex.activeBuffs.holyWater;[S.equipment.weapon,S.equipment.hands].forEach(item=>{if(item&&item.durability>0)item.durability=Math.max(0,item.durability-(0.06+Math.random()*0.10))})}else if(!silent)pushLog("心神动摇，这一击落空了。","warn");if(m.hp<=0){const loot=Math.round((6+(ex.depth-layerStart)*1.0+Math.random()*5)*(1+darkness*0.6)*stats.goldMul);ex.carriedGold+=loot;if(stats.healOnKill>0)h.hp=Math.min(stats.maxHp,h.hp+stats.healOnKill);const adv=0.6+darkness*0.4+Math.random()*0.3;ex.depth=Math.min(ex.depth+adv,LAYERS[ex.layerIndex].maxDepth);if(ex.depth>ex.maxDepthReached)ex.maxDepthReached=ex.depth;S.bestiary[m.name]=true;if(Math.random()<0.10+darkness*0.06){const item=generateItem(ex.depth,ex.layerIndex);ex.itemsFound.push(item);if(!silent)pushLog(`获得了 ${item.name}。`,"good")}const dropChance=0.04+darkness*0.06;if(Math.random()<dropChance){const pool=RELICS.filter(r=>!S.relicsOwned[r.id]);if(pool.length){const r=pool[Math.floor(Math.random()*pool.length)];S.relicsOwned[r.id]=true;r.apply(h);if(!silent)pushLog(`在尸骸旁拾得遗物「${r.name}」——${r.desc}`,"good")}}if(!silent&&loot>0)pushLog(`击败了${m.name}，获得 ${loot} 金，继续深入。`,"good");updateQuestKill(m.name);if(h.race==="bear"&&h.sanity<h.maxSanity*0.2)unlockRace("bear");ex.monster=null}else{if(ex.activeBuffs.roar){delete ex.activeBuffs.roar;if(!silent)pushLog("🐻 怪物被恐惧震慑，无法行动！","good")}else if(Math.random()<stats.dodge){if(!silent)pushLog(`你闪过了${m.name}的攻击！`,"good")}else{let mdmg=Math.round((m.atk*(0.85+Math.random()*0.3)-(stats.def+blockDef))*fearFactor*(1-mhDef));mdmg=Math.max(1,mdmg);h.hp-=mdmg;[S.equipment.body,S.equipment.head,S.equipment.feet,S.equipment.cloak].forEach(item=>{if(item&&item.durability>0)item.durability=Math.max(0,item.durability-(0.04+Math.random()*0.08))})}if(h.hp<=0){if(stats.revive>0){h.hp=Math.floor(stats.maxHp*0.5);if(S.equipment.relic&&S.equipment.relic.stats.revive&&S.equipment.relic.stats.revive>0)S.equipment.relic.stats.revive--;pushLog("凤凰翎羽燃起火焰，你从死亡边缘被拉了回来！","good");return}endExpedition("death",0.5,25);return}}}
+
+function simulateOffline(){const ex=S.expedition;if(!ex.active)return;const elapsedMs=Date.now()-S.lastTs;let ticks=Math.floor(elapsedMs/1000);if(ticks<=0)return;const capped=Math.min(ticks,14400);const goldBefore=ex.carriedGold||0;const depthBefore=ex.depth;let kills=0;for(let i=0;i<capped&&ex.active;i++){const hadMonster=!!ex.monster;stepTick(true);if(hadMonster&&!ex.monster&&ex.active)kills++}if(ex.active){const goldGained=(ex.carriedGold||0)-goldBefore;const depthGained=ex.depth-depthBefore;pushLog(`【离场纪事】在你离开的 ${Math.floor(capped/60)} 分钟里，英雄独自深入了 ${depthGained.toFixed(1)} 尺，击败 ${kills} 只怪物，携回 ${Math.max(0,Math.round(goldGained))} 金。`,"dim")}else{pushLog("【离场纪事】你离开期间，探索已经结束。","dim")}}
+
+function useSkill(skillId){const ex=S.expedition;if(!ex.active||!ex.monster)return;const sk=SKILLS.find(s=>s.id===skillId);if(!sk)return;if(ex.skillCooldowns[skillId]&&ex.skillCooldowns[skillId]>0)return;const h=S.hero;if(h.race==="bear"&&h.sanity<h.maxSanity*0.3)return;if(sk.costType==="sanity"){if(h.sanity<sk.cost)return;h.sanity-=sk.cost}else if(sk.costType==="torch"){if(ex.torch<sk.cost)return;ex.torch-=sk.cost}else if(sk.costType==="hp"){if(h.hp<=sk.cost)return;h.hp-=sk.cost}switch(sk.type){case"nextAttack":ex.activeBuffs[sk.buffKey]=sk.value;pushLog("⚡ 蓄力猛击——下次攻击威力倍增！","good");break;case"buff":ex.activeBuffs[sk.buffKey]={value:sk.value,remaining:sk.duration};pushLog(`${sk.name}发动——持续${sk.duration}秒。`,"good");break;case"instant":const fireDmg=Math.round(ex.torch/heroMaxTorchBase()*100*0.3);ex.monster.hp-=fireDmg;pushLog(`🔥 火焰吞噬了${ex.monster.name}，造成 ${fireDmg} 点伤害！`,"good");break}/*种族技能*/if(sk.type==="raceSkill"){switch(sk.id){case"inspire":delete ex.activeBuffs.allin;delete ex.activeBuffs.berserk;ex._cursedSpawn=false;pushLog("💪 振奋——负面状态已被清除！","good");break;case"forestStep":ex._forceEvent=true;pushLog("🌿 林间步——下一个角落必有发现。","good");break;case"roar":ex.activeBuffs.roar={value:1,remaining:1};pushLog("🐻 咆哮——怪物被恐惧震慑！","good");break}}if(sk.cooldown)ex.skillCooldowns[skillId]=sk.cooldown;render();save()}
+
+function resolveEvent(choice){const ex=S.expedition;if(!ex.event)return;const ev=ex.event;const h=S.hero;const mult=S.hero.race==="elf"?1.3:1;if(ev.type==="narrative"){applyEventEffect(ev.effect,Math.round(ev.val*mult),mult);ex.event=null;return}const opt=choice==="safe"?ev.safe:ev.risky;if(!opt)return;if(choice==="risky"&&ev.risky.riskEffect&&Math.random()<ev.risky.riskChance){applyEventEffect(ev.risky.riskEffect,ev.risky.riskVal,mult);pushLog(ev.risky.riskLog,"warn")}else{applyEventEffect(opt.effect,Math.round(typeof opt.val==="number"?opt.val*mult:opt.val),mult);if(opt.log)pushLog(opt.log,choice==="risky"?"good":"dim")}S.expedition._expeditionEvents=(S.expedition._expeditionEvents||0)+1;ex.event=null}
+function applyEventEffect(effect,val,mult){const ex=S.expedition,h=S.hero;switch(effect){case"torch":ex.torch=Math.min(ex.maxTorch,ex.torch+val);break;case"torch_cost":ex.torch=Math.max(0,ex.torch-val);break;case"gold":ex.carriedGold+=val;break;case"sanity":h.sanity=Math.min(h.maxSanity,h.sanity+val);break;case"sanityPenalty":h.sanity=Math.max(0,h.sanity-val);break;case"hpLoss":h.hp=Math.max(1,h.hp-val);break;case"heal":h.hp=Math.min(calcHeroStats().maxHp,h.hp+val);break;case"depth_cost":ex.depth=Math.min(ex.depth+val,LAYERS[ex.layerIndex].maxDepth);break;case"relic_chance":if(Math.random()<val){const pool=RELICS.filter(r=>!S.relicsOwned[r.id]);if(pool.length){const r=pool[Math.floor(Math.random()*pool.length)];S.relicsOwned[r.id]=true;r.apply(h);pushLog(`获得了遗物「${r.name}」！`,"good")}}break;case"equip_drop":{const item=generateEquip(ex.depth,ex.layerIndex,false);ex.itemsFound.push(item);pushLog(`获得了 ${item.name}。`,"good");break}case"material_drop":{const mats=MATERIAL_TEMPLATES.filter(m=>["common","uncommon","rare","epic","legendary"].indexOf(m.rarity)<=Math.min(4,Math.floor(ex.layerIndex/1)+1));if(mats.length>0){const m=mats[Math.floor(Math.random()*mats.length)];const it={id:m.id+"_evt_"+Date.now(),templateId:m.id,name:m.name,type:"material",rarity:m.rarity,stats:{},durability:999,maxDurability:999,sellPrice:m.baseVal,unidentified:false};ex.itemsFound.push(it);pushLog(`获得了 ${it.name}。`,"good")}}break;case"cursed_debuff":case"curse_spawn":ex._cursedSpawn=true;break;case"knowledge_fragment":pushLog("你获得了一段深渊的记忆碎片……","dim");break;case"skip":break}}
+
+function useConsumable(shopId){const ex=S.expedition;if(!ex.active)return;const item=SHOP_ITEMS.find(s=>s.id===shopId);if(!item)return;const held=ex.consumables[shopId]||0;if(held<=0)return;ex.consumables[shopId]=held-1;if(ex.consumables[shopId]<=0)delete ex.consumables[shopId];const h=S.hero;switch(item.effect){case"torch":ex.torch=Math.min(ex.maxTorch,ex.torch+item.value);pushLog(`🔥 使用了火把油，火把+${item.value}。`,"good");break;case"heal":h.hp=Math.min(calcHeroStats().maxHp,h.hp+item.value);pushLog(`🩹 使用了急救绷带，生命+${item.value}。`,"good");break;case"sanity":h.sanity=Math.min(h.maxSanity+calcHeroStats().maxSanityBonus,h.sanity+item.value);pushLog(`🧪 使用了镇静药剂，神智+${item.value}。`,"good");break;case"cleansCurse":ex._cursedSpawn=false;pushLog("⚗️ 使用了解毒剂，诅咒已被净化。","good");break;case"holyWater":ex.activeBuffs.holyWater=item.value;pushLog("✨ 圣水加持——下次攻击威力倍增！","good");break;case"firebomb":if(ex.monster){ex.monster.hp-=item.value;pushLog(`💣 火药瓶爆炸！对${ex.monster.name}造成 ${item.value} 点伤害。`,"good")}else{ex._cursedSpawn=true;pushLog("💣 火药瓶扔进了黑暗中……似乎惊动了什么。","dim")}break}render();save()}
+function buyConsumable(shopId){const item=SHOP_ITEMS.find(s=>s.id===shopId);if(!item||S.gold<item.price||S.expedition.active)return;const ex=S.expedition;const held=ex.consumables[shopId]||0;if(held>=item.maxCarry)return;S.gold-=item.price;ex.consumables[shopId]=held+1;pushLog(`购买了 ${item.icon} ${item.name}。`,"dim");render();save()}
+
+function unlockRace(raceId){if(!S.unlockedRaces.includes(raceId)){S.unlockedRaces.push(raceId);const r=RACES.find(x=>x.id===raceId);if(r)pushLog(`🏆 新的守望者已觉醒——${r.icon} ${r.name}：${r.title}`,"good")}}
+function checkLayerUnlock(layerIdx,maxDepth){if(maxDepth>=LAYERS[layerIdx].maxDepth&&layerIdx+1<LAYERS.length&&!S.unlockedLayers.includes(layerIdx+1)){S.unlockedLayers.push(layerIdx+1);const next=LAYERS[layerIdx+1];pushLog(`深渊之门震颤——${next.name}已向你敞开！`,"good");if(next.unlockBonus)pushLog(next.unlockBonus,"good");if(layerIdx+1===1)S.equipSlots=6;if(layerIdx+1===2)S.equipSlots=7;if(layerIdx+1===3)S.equipSlots=8}for(let i=layerIdx+1;i<LAYERS.length;i++){if(maxDepth>=LAYERS[i-1].maxDepth&&!S.unlockedLayers.includes(i)){S.unlockedLayers.push(i);pushLog(`深渊之门震颤——${LAYERS[i].name}已向你敞开！`,"good");if(i===1)S.equipSlots=Math.max(S.equipSlots,6);if(i===2)S.equipSlots=Math.max(S.equipSlots,7);if(i===3)S.equipSlots=Math.max(S.equipSlots,8)}}}
+
+function updateQuestKill(monsterName){S.activeQuests.forEach(q=>{if(q.type==="kill"&&q.monster===monsterName)q.progress=Math.min(q.count,(q.progress||0)+1)})}
+function updateQuestOnEnd(ex){S.activeQuests.forEach(q=>{if(q.type==="depth"&&ex.maxDepthReached>=q.target)q.progress=q.count||1;if(q.type==="survive"&&ex.surviveMinutes>=q.minutes)q.progress=q.count||1;if(q.type==="collect"){const found=ex.itemsFound.filter(i=>i.name===q.material).length;q.progress=Math.min(q.count,(q.progress||0)+found)}})}
+function checkQuestCompletion(){S.activeQuests=S.activeQuests.filter(q=>{if(q.expiresAt&&q.expiresAt<Date.now()&&!q.completed){pushLog(`任务「${q.name}」已过期。`,"dim");return false}return true});S.activeQuests.forEach(q=>{if(!q.completed&&q.progress>=(q.count||1))q.completed=true})}
+function generateQuest(){const now=Date.now();const available=QUEST_POOL.filter(q=>{if(S.activeQuests.find(aq=>aq.poolId===q.id))return false;if(q.needLayer&&!S.unlockedLayers.includes(q.needLayer))return false;return true});if(available.length===0)return null;const tpl=available[Math.floor(Math.random()*available.length)];return{poolId:tpl.id,name:tpl.name,desc:tpl.desc,type:tpl.type,monster:tpl.monster||null,count:tpl.count||1,target:tpl.target||0,material:tpl.material||null,minutes:tpl.minutes||0,progress:0,completed:false,reward:{gold:tpl.gold,itemTid:tpl.itemReward?tpl.itemReward.tid:null},expiresAt:now+(tpl.timeLimit||15)*60*1000,needLayer:tpl.needLayer||0}}
+function claimQuest(q){if(!q.completed)return;S.gold+=q.reward.gold;pushLog(`完成任务「${q.name}」，获得 ${q.reward.gold} 金。`,"good");if(q.reward.itemTid){const tpl=EQUIP_TEMPLATES.find(e=>e.id===q.reward.itemTid);if(tpl&&S.inventory.length<getBagCapacity()){const item={id:tpl.id+"_quest_"+Date.now()+"_"+Math.random().toString(36).slice(2,6),templateId:tpl.id,name:tpl.name,type:tpl.type,rarity:tpl.rarity,stats:{...tpl.baseStats},durability:tpl.baseDura,maxDurability:tpl.baseDura,sellPrice:tpl.baseVal,unidentified:false};S.inventory.push(item);pushLog(`获得了 ${tpl.name}！`,"good")}}S.completedQuestIds.push(q.poolId);S.activeQuests=S.activeQuests.filter(aq=>aq!==q);S.questRefreshAt=Date.now()+2*60*1000}
+function refreshQuests(){if(S.activeQuests.length>=3)return;const need=3-S.activeQuests.length;for(let i=0;i<need;i++){const q=generateQuest();if(q)S.activeQuests.push(q)}}
+
+function switchToCamp(){document.body.classList.remove("in-expedition");renderCampTab(S._campTab||"prep")}
+function switchToExpedition(){document.body.classList.add("in-expedition")}
+
+function repairCost(item){if(!item||item.durability>=item.maxDurability)return 0;const rarityData=RARITY[item.rarity]||RARITY.common;const missing=item.maxDurability-item.durability;return Math.max(1,Math.round(missing*0.02*(item.sellPrice||5)*rarityData.craftCostMul))}
+
+function render(){if(document.body.classList.contains("in-expedition"))renderExpedition();else renderCamp()}
+function renderCamp(){el("goldNumH").textContent=S.gold;const tab=S._campTab||"prep";renderPrep();renderQuestBoard();renderShop();renderSmith(tab==="smith"?S._smithTab||"sell":"sell");renderAbyssGate();renderChurch();renderWarehouse();renderSettings();renderTavern();document.getElementById("headerEyebrow").textContent="营 地 · 整 备 · 出 征";document.getElementById("headerSub").textContent="火尽人归，深处不留光"}
+function renderCampTab(tab){S._campTab=tab;document.querySelectorAll(".nav-tab").forEach(b=>b.classList.remove("active"));const btn=document.querySelector(`.nav-tab[data-tab="${tab}"]`);if(btn)btn.classList.add("active");document.querySelectorAll("#camp-view .tab-content").forEach(p=>p.classList.remove("active"));const panel=document.getElementById("tab-"+tab);if(panel)panel.classList.add("active");renderCamp()}
+
+function renderPrep(){const eq=S.equipment,maxSlots=S.equipSlots;const allSlots={weapon:{label:"🗡 武器",side:"attack",desc:"攻击力·暴击",unlockAt:1},hands:{label:"✋ 手部",side:"attack",desc:"暴击率·攻速",unlockAt:2},relic:{label:"🔮 圣物",side:"attack",desc:"被动·复活",unlockAt:8},cloak:{label:"🧥 披风",side:"attack",desc:"火把·黑暗",unlockAt:7},head:{label:"🎩 头部",side:"defense",desc:"神智抗性",unlockAt:5},body:{label:"🛡 躯干",side:"defense",desc:"防御力·生命",unlockAt:1},waist:{label:"🎽 腰部",side:"defense",desc:"背包扩容",unlockAt:6},feet:{label:"👢 足部",side:"defense",desc:"闪避·移动",unlockAt:3}};const stats=calcHeroStats();const totalBag=S.bagCapacity+stats.bagSlots;const raceNames={human:"👤 人类",elf:"🧝 精灵",bear:"🐻 熊人",dwarf:"⛏️ 矮人"};function slotHTML(key){const cfg=allSlots[key];const locked=maxSlots<cfg.unlockAt;const lockHints={5:"到达中层甬道解锁",6:"到达中层甬道解锁",7:"到达深层墓室解锁",8:"到达绝渊回廊解锁"};const item=eq[key];if(locked)return `<div class="equip-slot" style="opacity:0.4"><span class="slot-label">${cfg.label}</span><span class="slot-empty">🔒 ${lockHints[cfg.unlockAt]||"未解锁"}</span></div>`;if(item){const durPct=item.maxDurability>0?Math.round(item.durability/item.maxDurability*100):100;const warnClass=durPct<25?"durability-warn":"";return `<div class="equip-slot ${warnClass}"><div><span class="slot-label">${cfg.label}</span><span style="font-size:9px;color:var(--muted);"> ${cfg.desc}</span><br><span class="slot-item ${'rarity-'+item.rarity}">${item.name}</span><span style="font-size:10px;color:${durPct<25?'var(--blood-bright)':'var(--muted)'};"> 耐久 ${Math.round(item.durability)}/${item.maxDurability}</span></div><div class="slot-actions">${item.durability<item.maxDurability?`<button class="small" onclick="repairEquipment('${key}');event.stopPropagation();">修 ${repairCost(item)}金</button>`:""}<button class="small danger" onclick="unequipItem('${key}');event.stopPropagation();">卸</button></div></div>`}return `<div class="equip-slot"><span class="slot-label">${cfg.label}</span><span style="font-size:9px;color:var(--muted);"> ${cfg.desc}</span><span class="slot-empty">空</span></div>`}const attackSlots=["weapon","hands","relic","cloak"];const defenseSlots=["head","body","waist","feet"];el("equipSlots").innerHTML=`<div style="font-size:12px;color:var(--candle-dim);margin-bottom:8px;">种族：${raceNames[S.hero.race]||"👤 人类"}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div><div style="text-align:center;font-size:11px;color:var(--candle-dim);letter-spacing:0.15em;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:4px;">— 攻 势 —</div>${attackSlots.map(k=>slotHTML(k)).join("")}</div><div><div style="text-align:center;font-size:11px;color:var(--candle-dim);letter-spacing:0.15em;margin-bottom:6px;border-bottom:1px solid var(--line);padding-bottom:4px;">— 守 御 —</div>${defenseSlots.map(k=>slotHTML(k)).join("")}</div></div>`;const inv=S.inventory;el("invCount").textContent=inv.length+"/"+totalBag;if(inv.length===0)el("invPanel").innerHTML=`<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">背包空空如也<br><span style="font-size:10px;">深入深渊，获取战利品</span></div>`;else el("invPanel").innerHTML=inv.map((item,i)=>{const canEquip=!item.unidentified&&item.type!=="material"&&maxSlots>=(allSlots[item.type]?allSlots[item.type].unlockAt:99);const durText=item.type!=="material"?`<span class="inv-dur">${Math.round(item.durability)}/${item.maxDurability}</span>`:"";return `<div class="inv-row"><span class="inv-name ${'rarity-'+item.rarity}">${item.unidentified?'🔍 ':''}${item.name}</span>${durText}<span class="inv-act">${canEquip?`<button class="small" onclick="equipFromInv(${i})">装备</button>`:""}<button class="small" style="border-color:var(--candle);color:var(--candle);" onclick="sellItem(${i})">出售 ${item.sellPrice}金</button><button class="small danger" onclick="discardItem(${i})">丢弃</button></span></div>`}).join("")}
+
+function renderQuestBoard(){checkQuestCompletion();const now=Date.now();if(S.activeQuests.length<3&&(!S.questRefreshAt||now>=S.questRefreshAt)){refreshQuests();S.questRefreshAt=now+2*60*1000}let html="";S.activeQuests.forEach((q,idx)=>{const remaining=q.expiresAt?Math.max(0,Math.floor((q.expiresAt-now)/1000)):0;const min=Math.floor(remaining/60),sec=remaining%60;const urgent=remaining<120;const cardClass=q.completed?"completed":(remaining<=0?"failed":"");html+=`<div class="quest-card ${cardClass}"><div class="q-header"><span class="q-name">${q.completed?'✅ ':''}${q.name}</span><span class="q-timer ${urgent?'urgent':'normal'}">⏱ ${min}:${sec.toString().padStart(2,'0')}</span></div><div class="q-desc">${q.desc}</div><div class="q-progress">进度：${q.progress||0}/${q.count||1}${q.type==='survive'?' 分钟':''}</div><div class="q-reward">🎁 ${q.reward.gold}金${q.reward.itemTid?' + '+getEquipName(q.reward.itemTid):''}</div><div class="q-actions">${q.completed?`<button class="primary small" onclick="claimQuestById(${idx})">领取奖励</button>`:`<button class="small danger" onclick="abandonQuest(${idx})">放弃</button>`}</div></div>`});if(S.activeQuests.length===0)html=`<div style="color:var(--muted);text-align:center;padding:20px;">暂无悬赏令<br><span style="font-size:10px;">等待任务板刷新……</span></div>`;el("questList").innerHTML=html;const secToRefresh=S.questRefreshAt?Math.max(0,Math.floor((S.questRefreshAt-now)/1000)):0;el("questRefreshInfo").textContent=`刷新倒计时: ${Math.floor(secToRefresh/60)}:${(secToRefresh%60).toString().padStart(2,'0')}`}
+
+function renderShop(){let html="";SHOP_ITEMS.forEach(item=>{const held=S.expedition.consumables[item.id]||0;const canBuy=!S.expedition.active&&S.gold>=item.price&&held<item.maxCarry;html+=`<div class="shop-card" style="flex:1;min-width:140px;background:var(--panel-2);border:1px solid var(--line);border-radius:3px;padding:12px;text-align:center;"><div style="font-size:22px;">${item.icon}</div><div style="font-size:14px;color:var(--moon);margin:4px 0;">${item.name}</div><div style="font-size:10px;color:var(--muted);margin-bottom:6px;">${item.desc}</div><div style="font-size:10px;color:var(--muted);margin-bottom:6px;">携带: ${held}/${item.maxCarry}</div><button class="small primary" ${!canBuy?'disabled':''} onclick="buyConsumable('${item.id}')">${item.price}金</button></div>`});el("shopItems").innerHTML=html}
+
+function renderSmith(subtab){S._smithTab=subtab;document.querySelectorAll(".smith-tab").forEach(b=>b.classList.remove("active"));const btn=document.querySelector(`.smith-tab[data-smith="${subtab}"]`);if(btn)btn.classList.add("active");document.querySelectorAll(".smith-content").forEach(p=>p.classList.remove("active"));const panel=document.getElementById("smith-"+subtab);if(panel)panel.classList.add("active");el("identifyBadge").textContent=S.inventory.filter(i=>i.unidentified).length>0?`(${S.inventory.filter(i=>i.unidentified).length})`:"";const smithMul=S.hero.race==="dwarf"?0.7:1;let sellHtml="";if(S.inventory.length===0)sellHtml=`<div style="color:var(--muted);text-align:center;padding:20px;">没有可出售的物品</div>`;else S.inventory.forEach((item,i)=>{sellHtml+=`<div class="sell-row"><span class="${'rarity-'+item.rarity}">${item.unidentified?'🔍 ':''}${item.name} ${item.type!=="material"?`[${Math.round(item.durability)}/${item.maxDurability}]`:''}</span><span class="sell-price">${item.sellPrice}金</span><button class="small" style="border-color:var(--candle);color:var(--candle);" onclick="sellItem(${i})">出售</button></div>`});el("smith-sell").innerHTML=sellHtml;let idHtml="";const unidItems=S.inventory.filter(i=>i.unidentified);if(unidItems.length===0)idHtml=`<div style="color:var(--muted);text-align:center;padding:20px;">没有待鉴定的物品<br><span style="font-size:10px;">深渊中偶尔能发现需要鉴定的装备</span></div>`;else unidItems.forEach(item=>{const cost=Math.round((item.sellPrice||10)*0.4*smithMul);idHtml+=`<div class="sell-row"><span>🔍 ${item.name}</span><span class="sell-price">鉴定费 ${cost}金</span><button class="small primary" onclick="identifyItem('${item.id}')">鉴定</button></div>`});el("smith-identify").innerHTML=idHtml;let craftHtml=`<table class="craft-table"><tr><th>名称</th><th>类型</th><th>稀有度</th><th>材料</th><th>金币</th><th></th></tr>`;CRAFT_RECIPES.forEach(recipe=>{const locked=!S.unlockedLayers.includes(recipe.needLayer);const resultTpl=EQUIP_TEMPLATES.find(e=>e.id===recipe.result.tid);const name=resultTpl?resultTpl.name:recipe.name;const rarity=resultTpl?resultTpl.rarity:"common";const type=resultTpl?resultTpl.type:"?";const matsText=recipe.materials.map(m=>`${getMaterialName(m.mid)}×${m.qty}`).join(" + ");const craftCost=Math.round(recipe.cost*smithMul);const canCraft=!locked&&recipe.materials.every(m=>countMaterial(m.mid)>=m.qty)&&S.gold>=craftCost&&S.inventory.length<getBagCapacity();craftHtml+=`<tr class="${locked?'locked-row':''}"><td class="${'rarity-'+rarity}">${name}</td><td>${slotLabel(type)}</td><td>${RARITY[rarity]?RARITY[rarity].name:'?'}</td><td>${matsText}</td><td>${craftCost}金${smithMul<1?' (-30%)':''}</td><td>${locked?`<span style="font-size:10px;color:var(--muted);">需要${LAYERS[recipe.needLayer].name}</span>`:`<button class="small primary" ${!canCraft?'disabled':''} onclick="craftItem('${recipe.id}')">打造</button>`}</td></tr>`});craftHtml+=`</table>`;el("smith-craft").innerHTML=craftHtml}
+
+function renderAbyssGate(){let html="";LAYERS.forEach((layer,i)=>{const unlocked=S.unlockedLayers.includes(i);const selected=S.selectedLayer===i;html+=`<div class="layer-card ${unlocked?'':'locked'} ${selected?'selected':''}" ${unlocked?`onclick="selectLayer(${i})"`:''}><div class="l-name">${unlocked?'🔓':'🔒'} ${layer.name}</div><div class="l-depth">${layer.startDepth} - ${layer.maxDepth>=999?'∞':layer.maxDepth} 尺</div><div class="l-monsters">🐉 ${layer.monsters.slice(0,3).join(' · ')}${layer.monsters.length>3?' …':''}</div><div class="l-danger">危险等级：${layer.danger}</div>${!unlocked?`<div class="l-unlock">${layer.unlockMsg||'?'}</div>`:''}${layer.unlockBonus?`<div class="l-unlock" style="color:var(--candle-dim);">${layer.unlockBonus}</div>`:''}</div>`});el("layerCards").innerHTML=html;const layer=LAYERS[S.selectedLayer];const unlocked=S.unlockedLayers.includes(S.selectedLayer);el("abyssAction").innerHTML=unlocked?`<button class="primary" style="font-size:16px;padding:12px 40px;" onclick="startExpedition(${S.selectedLayer})">⚔️ 从「${layer.name}」出征</button>`:`<span style="color:var(--muted);">该层级尚未解锁</span>`}
+
+function renderChurch(){const now=Date.now();const onCooldown=S.prayerCooldown>now;const remaining=onCooldown?S.prayerCooldown-now:0;const hrs=Math.floor(remaining/3600000);const mins=Math.floor((remaining%3600000)/60000);if(S.activeBlessing){el("churchStatus").innerHTML=`<span style="color:var(--candle);">当前祝福生效中：</span>`;el("churchBuff").innerHTML=`<span style="font-size:18px;">${S.activeBlessing.icon} <strong style="color:var(--candle);">${S.activeBlessing.name}</strong></span><br><span style="font-size:12px;color:var(--muted);">${S.activeBlessing.desc}（下次远征生效）</span>`;el("prayBtn").disabled=true;el("prayBtn").textContent="祝福已就绪，出征吧"}else if(onCooldown){el("churchStatus").innerHTML=`<span style="color:var(--muted);">祷告后需静候神明的回应……</span>`;el("churchBuff").innerHTML=`<span style="font-size:13px;color:var(--muted);">冷却剩余：</span><span style="font-size:16px;color:var(--sanity);">${hrs}时${mins}分</span>`;el("prayBtn").disabled=true;el("prayBtn").textContent=`⏳ ${hrs}时${mins}分后可祈祷`}else{el("churchStatus").innerHTML=`<span style="color:var(--muted);">在深渊礼拜堂中静心祈祷，祈求神明的眷顾。</span>`;el("churchBuff").innerHTML=`<span style="font-size:12px;color:var(--muted);">可能获得的祝福：</span><br><span style="font-size:11px;color:var(--muted);">${BLESSINGS.map(b=>b.icon+b.name).join(' · ')}</span>`;el("prayBtn").disabled=false;el("prayBtn").textContent="🕯️ 祈 祷"}const s=calcHeroStats();const effMax=S.hero.maxSanity+s.maxSanityBonus;const cost=Math.ceil((effMax-S.hero.sanity)*1.5);const canRestore=S.hero.sanity<effMax&&S.gold>=cost;el("churchRestore").innerHTML=`<span style="font-size:12px;color:var(--muted);">恢复神智 · ${S.hero.sanity>=effMax?'神智已满':cost+' 金'}</span>`;const rstBtn=document.getElementById("restoreSanityBtn");if(rstBtn){rstBtn.disabled=!canRestore;rstBtn.textContent=S.hero.sanity>=effMax?"🙏 神智已满":`🙏 静心祈祷 · ${cost}金`}}
+function doPray(){if(S.prayerCooldown>Date.now()||S.activeBlessing)return;const b=BLESSINGS[Math.floor(Math.random()*BLESSINGS.length)];S.activeBlessing={type:b.id,name:b.name,desc:b.desc,icon:b.icon,apply:b.apply};S.prayerCooldown=Date.now()+3*60*60*1000;pushLog(`⛪ 你在礼拜堂中虔诚祈祷，获得了「${b.name}」——${b.desc}`,"good");render();save()}
+function restoreSanity(){const s=calcHeroStats();const effMax=S.hero.maxSanity+s.maxSanityBonus;const cost=Math.ceil((effMax-S.hero.sanity)*1.5);if(S.hero.sanity>=effMax||S.gold<cost)return;S.gold-=cost;S.hero.sanity=effMax;pushLog("你在残烛前静坐良久，心神渐渐安定。","good");render();save()}
+
+function warehouseUpgradeCost(){const level=(S.warehouseSlots-20)/5;return Math.round(100*Math.pow(1.5,level))}
+function upgradeWarehouse(){if(S.warehouseSlots>=50)return;const cost=warehouseUpgradeCost();if(S.gold<cost)return;S.gold-=cost;S.warehouseSlots+=5;pushLog(`📦 秘库扩容至 ${S.warehouseSlots} 格，花费 ${cost} 金。`,"good");render();save()}
+function depositItem(idx){const item=S.inventory[idx];if(!item||item.unidentified||S.warehouse.length>=S.warehouseSlots)return;if(item.type==="material"&&item.templateId){const existing=S.warehouse.find(w=>w.templateId===item.templateId);if(existing&&existing.qty!==undefined){existing.qty+=1;S.inventory.splice(idx,1);render();save();return}S.warehouse.push({...item,qty:1})}else S.warehouse.push(item);S.inventory.splice(idx,1);render();save()}
+function withdrawItem(whIdx){const item=S.warehouse[whIdx];if(!item||S.inventory.length>=getBagCapacity())return;if(item.qty!==undefined&&item.qty>1){const single={...item};delete single.qty;S.inventory.push(single);item.qty-=1;if(item.qty<=0)S.warehouse.splice(whIdx,1)}else{S.inventory.push(item);S.warehouse.splice(whIdx,1)}render();save()}
+function renderWarehouse(){const wh=S.warehouse,inv=S.inventory;el("whCount").textContent=wh.length+"/"+S.warehouseSlots;if(S.warehouseSlots>=50)el("whUpgradeRow").innerHTML=`<span style="font-size:11px;color:var(--candle-dim);">秘库已满级 (50格)</span>`;else{const cost=warehouseUpgradeCost();el("whUpgradeRow").innerHTML=`<button class="small" ${S.gold<cost?'disabled':''} onclick="upgradeWarehouse()">扩容 +5格 · ${cost}金</button>`}if(wh.length===0)el("whPanel").innerHTML=`<div style="color:var(--muted);font-size:11px;text-align:center;padding:16px;">仓库空空如也</div>`;else el("whPanel").innerHTML=wh.map((item,i)=>{const name=item.name+(item.qty>1?` ×${item.qty}`:"");const sub=item.type!=="material"?`<span class="inv-dur">${Math.round(item.durability)}/${item.maxDurability}</span>`:"";return `<div class="inv-row"><span class="inv-name ${'rarity-'+item.rarity}">${name}</span>${sub}<span class="inv-act"><button class="small" onclick="withdrawItem(${i})">取出</button></span></div>`}).join("");if(inv.length===0)el("whInvPanel").innerHTML=`<div style="color:var(--muted);font-size:11px;text-align:center;padding:12px;">背包空空如也</div>`;else el("whInvPanel").innerHTML=inv.map((item,i)=>{const canDeposit=!item.unidentified&&wh.length<S.warehouseSlots;return `<div class="inv-row"><span class="inv-name ${'rarity-'+item.rarity}">${item.unidentified?'🔍 ':''}${item.name}</span><span class="inv-dur">${item.type!=="material"?Math.round(item.durability)+'/'+item.maxDurability:''}</span><span class="inv-act"><button class="small" ${!canDeposit?'disabled':''} onclick="depositItem(${i})">${item.unidentified?'🔍鉴定后':'存入'}</button></span></div>`}).join("")}
+
+function confirmDeleteSave(){showModal("确认删除存档","此操作将永久删除你的所有进度，包括金币、装备、怪物志和最深记录。此操作不可撤销。",[{label:"取消",cls:"",action:"hideModal()"},{label:"确认删除",cls:"danger",action:"deleteSave()"}])}
+function deleteSave(){S._deleting=true;localStorage.removeItem(SAVE_KEY);hideModal();location.reload()}
+function renderSettings(){const el2=document.getElementById("settingsStats");if(el2)el2.innerHTML=`最深记录：<span style="color:var(--candle);">${S.maxDepthRecord.toFixed(1)}</span> 尺<br>持有金币：<span style="color:var(--candle);">${S.gold}</span><br>怪物志：<span style="color:var(--candle);">${Object.keys(S.bestiary).length}</span> 种<br>遗物收集：<span style="color:var(--candle);">${Object.keys(S.relicsOwned).length}</span> / ${RELICS.length}<br>最深层级：<span style="color:var(--candle);">${S.unlockedLayers.length>0?LAYERS[Math.max(...S.unlockedLayers)].name:'浅层回廊'}</span><br>当前种族：<span style="color:var(--candle);">${({human:'👤 人类',elf:'🧝 精灵',bear:'🐻 熊人',dwarf:'⛏️ 矮人'})[S.hero.race]||'???'}</span>`}
+
+function renderTavern(){el("tavernRecord").textContent=S.maxDepthRecord.toFixed(1)}
+
+function renderExpedition(){const ex=S.expedition,stats=calcHeroStats(),h=S.hero;const raceNames={human:"👤 人类",elf:"🧝 精灵",bear:"🐻 熊人",dwarf:"⛏️ 矮人"};el("expRace").textContent=raceNames[h.race]||"👤 人类";el("expLayerName").textContent=LAYERS[ex.layerIndex]?LAYERS[ex.layerIndex].name:"???";el("expCarriedGold").textContent=ex.carriedGold||0;el("hpNum").textContent=`${Math.max(0,Math.round(h.hp))} / ${stats.maxHp}`;el("hpFill").style.width=Math.max(0,(h.hp/stats.maxHp*100))+"%";el("atkNum").textContent=stats.atk;el("defNum").textContent=stats.def;el("dodgeNum").textContent=Math.round(stats.dodge*100)+"%";el("sanityNum").textContent=Math.round(h.sanity)+"/"+(h.maxSanity+stats.maxSanityBonus);el("sanityFill").style.width=(h.sanity/(h.maxSanity+stats.maxSanityBonus)*100)+"%";el("goldNumH").textContent=S.gold;el("depthNum").textContent=ex.depth.toFixed(1);el("recordNum").textContent=S.maxDepthRecord.toFixed(1);const torchPct=ex.active?Math.max(0,ex.torch/ex.maxTorch*100):100;el("torchFill").style.height=torchPct+"%";el("torchPct").textContent=Math.round(torchPct);const flame=el("flame");flame.style.animationDuration=ex.active?(0.6+torchPct/100*1.2)+"s":"1.6s";flame.style.opacity=ex.active?(0.4+torchPct/100*0.6):1;el("expLayerLabel").textContent=LAYERS[ex.layerIndex]?LAYERS[ex.layerIndex].name:"???";el("expDepthMax").textContent=LAYERS[ex.layerIndex]?LAYERS[ex.layerIndex].maxDepth+"尺":"?";if(ex.itemsFound.length===0)el("expItemsBag").innerHTML=`<div style="color:var(--muted);font-size:10px;text-align:center;">暂无战利品</div>`;else el("expItemsBag").innerHTML=ex.itemsFound.map(item=>`<div class="row"><span class="${'rarity-'+item.rarity}">${item.name}</span></div>`).join("");const box=el("encounterBox");if(!ex.active){box.className="encounter empty";box.innerHTML="远征结束"}else if(!ex.monster){if(ex.event&&ex.event.type!=="narrative"){const ev=ex.event;box.className="encounter";box.innerHTML=`<div style="font-size:15px;color:var(--candle);margin-bottom:8px;">${ev.name||"……"}</div><div style="font-size:12px;color:var(--muted);margin-bottom:12px;">${ev.type==="curio"?"一件奇物出现在你面前。":ev.type==="trap"?"前方有危险的气息。":"一处可以歇脚的地方。"}</div><div style="display:flex;gap:8px;"><button class="small" onclick="resolveEvent('safe')" style="flex:1;">${ev.safe.text||"稳妥行事"}</button><button class="small danger" onclick="resolveEvent('risky')" style="flex:1;">${ev.risky.text||"冒险一试"}</button></div>`}else{box.className="encounter empty";box.innerHTML="回廊寂静无声…"}}else{box.className="encounter";const pct=Math.max(0,ex.monster.hp/ex.monster.maxHp*100);box.innerHTML=`<div class="monster-name">${ex.monster.name}</div><div class="monster-hp-wrap"><div class="monster-hp"><div style="width:${pct}%"></div></div><div class="monster-hp-num">${Math.max(0,Math.round(ex.monster.hp))}/${ex.monster.maxHp}</div></div>`}el("descendBtn").disabled=ex.active;el("retreatBtn").disabled=!ex.active;el("logBox").innerHTML=S.logs.map(l=>`<div class="entry ${l.cls}">${l.text}</div>`).join("");const skillBar=document.getElementById("skillBar");if(skillBar){const bloodrageBlock=h.race==="bear"&&h.sanity<h.maxSanity*0.3;const allSkills=[...SKILLS.filter(s=>!s.race||s.race===h.race)];skillBar.innerHTML=allSkills.map(sk=>{const onCd=ex.skillCooldowns[sk.id]&&ex.skillCooldowns[sk.id]>0;const cdText=onCd?` (${ex.skillCooldowns[sk.id]}s)`:"";let disabled=!ex.active||!ex.monster||bloodrageBlock;if(ex.active&&ex.monster&&!onCd&&!bloodrageBlock){if(sk.costType==="sanity"&&h.sanity<sk.cost)disabled=true;if(sk.costType==="torch"&&ex.torch<sk.cost)disabled=true;if(sk.costType==="hp"&&h.hp<=sk.cost)disabled=true}let cls="skill-btn";if(onCd)cls+=" on-cooldown";const hasBuff=ex.activeBuffs[sk.buffKey];if(hasBuff)cls+=" active-buff";if(sk.id==="allin")cls+=" danger";const text=onCd?sk.name+cdText:sk.name;return `<button class="${cls}" ${disabled?'disabled':''} onclick="useSkill('${sk.id}')">${sk.name}</button>`}).join("")}const consumableBar=document.getElementById("consumableBar");if(consumableBar){const inCombat=ex.active&&ex.monster;consumableBar.innerHTML=SHOP_ITEMS.map(item=>{const held=ex.consumables[item.id]||0;const combatOnly=(item.effect==="holyWater"||item.effect==="firebomb");const canUse=ex.active&&held>0&&(!combatOnly||inCombat);return `<button class="skill-btn" ${!canUse?'disabled':''} onclick="useConsumable('${item.id}')" title="${item.desc} (剩余 ${held})">${item.icon} ${held}</button>`}).join("")}document.getElementById("headerEyebrow").textContent="深 渊 · 探 索 · 生 存";document.getElementById("headerSub").textContent="火光摇曳，深渊在等待"}
+
+function equipFromInv(idx){const item=S.inventory[idx];if(!item||item.unidentified||item.type==="material")return;const slotKey=item.type;if(!S.equipment.hasOwnProperty(slotKey))return;const unlockMap={weapon:1,body:1,hands:2,feet:3,head:5,waist:6,cloak:7,relic:8};if(S.equipSlots<(unlockMap[slotKey]||1))return;const old=S.equipment[slotKey];S.equipment[slotKey]=item;if(old){if(S.inventory.length>=getBagCapacity()){S.gold+=Math.floor(old.sellPrice||1);pushLog(`背包已满，换下的${old.name}自动出售。`,"dim")}else{S.inventory.splice(idx,1,old);pushLog(`将${old.name}换为${item.name}。`,"dim")}}else{S.inventory.splice(idx,1);pushLog(`装备了${item.name}。`,"dim")}render();save()}
+function unequipItem(slotKey){const item=S.equipment[slotKey];if(!item)return;if(S.inventory.length>=getBagCapacity()){S.gold+=Math.floor(item.sellPrice||1);S.equipment[slotKey]=null;pushLog(`背包已满，卸下${item.name}后自动出售，获得 ${Math.floor(item.sellPrice||1)} 金。`,"dim")}else{S.inventory.push(item);S.equipment[slotKey]=null;pushLog(`卸下了${item.name}。`,"dim")}render();save()}
+function repairEquipment(slotKey){const item=S.equipment[slotKey];const cost=repairCost(item);if(cost<=0||S.gold<cost)return;S.gold-=cost;item.durability=item.maxDurability;pushLog(`修复了${item.name}，花费 ${cost} 金。`,"dim");render();save()}
+function sellItem(idx){const item=S.inventory[idx];if(!item)return;S.gold+=item.sellPrice||1;pushLog(`出售了${item.name}，获得 ${item.sellPrice||1} 金。`,"dim");S.inventory.splice(idx,1);render();save()}
+function discardItem(idx){S.inventory.splice(idx,1);pushLog("丢弃了一件物品。","dim");render();save()}
+function identifyItem(itemId){const item=S.inventory.find(i=>i.id===itemId);if(!item||!item.unidentified)return;const smithMul=S.hero.race==="dwarf"?0.7:1;const cost=Math.round((item.sellPrice||10)*0.4*smithMul);if(S.gold<cost){pushLog("金币不足，无法鉴定。","warn");render();save();return}S.gold-=cost;item.unidentified=false;if(item.templateId){const tpl=EQUIP_TEMPLATES.find(e=>e.id===item.templateId);if(tpl)item.name=tpl.name}pushLog(`鉴定完成——是「${item.name}」！`,"good");render();save()}
+function craftItem(recipeId){const recipe=CRAFT_RECIPES.find(r=>r.id===recipeId);if(!recipe||!S.unlockedLayers.includes(recipe.needLayer))return;if(!recipe.materials.every(m=>countMaterial(m.mid)>=m.qty))return;const smithMul=S.hero.race==="dwarf"?0.7:1;const craftCost=Math.round(recipe.cost*smithMul);if(S.gold<craftCost||S.inventory.length>=getBagCapacity())return;recipe.materials.forEach(m=>{let q=S.hero.race==="dwarf"?Math.max(1,m.qty-1):m.qty;while(q>0){const idx=S.inventory.findLastIndex(i=>i.templateId===m.mid);if(idx>=0){S.inventory.splice(idx,1);q--}else break}});S.gold-=craftCost;const tpl=EQUIP_TEMPLATES.find(e=>e.id===recipe.result.tid);if(tpl){const item={id:tpl.id+"_craft_"+Date.now()+"_"+Math.random().toString(36).slice(2,6),templateId:tpl.id,name:tpl.name,type:tpl.type,rarity:tpl.rarity,stats:{...tpl.baseStats},durability:tpl.baseDura,maxDurability:tpl.baseDura,sellPrice:tpl.baseVal,unidentified:false};S.inventory.push(item);pushLog(`打造完成——获得「${item.name}」！`,"good");S.craftsMade=(S.craftsMade||0)+1;if(S.craftsMade>=3)unlockRace("dwarf")}render();save()}
+function claimQuestById(idx){claimQuest(S.activeQuests[idx]);render();save()}
+function abandonQuest(idx){pushLog(`放弃了任务「${S.activeQuests[idx].name}」。`,"dim");S.activeQuests.splice(idx,1);render();save()}
+function selectLayer(idx){if(!S.unlockedLayers.includes(idx))return;S.selectedLayer=idx;renderCamp();save()}
+function returnToCamp(){if(!S.expedition.active)return;endExpedition("manual",0,0);render();save()}
+function getEquipName(tid){const t=EQUIP_TEMPLATES.find(e=>e.id===tid);return t?t.name:"?"}
+function getMaterialName(mid){const t=MATERIAL_TEMPLATES.find(m=>m.id===mid);return t?t.name:"?"}
+function countMaterial(mid){return S.inventory.filter(i=>i.templateId===mid&&!i.unidentified).length}
+function slotLabel(type){const map={weapon:"武器",head:"头部",body:"躯干",hands:"手部",waist:"腰部",feet:"足部",cloak:"披风",relic:"圣物",material:"材料"};return map[type]||"饰品"}
+function showModal(title,msg,actions){const overlay=el("modalOverlay");const box=el("modalBox");box.innerHTML=`<h4>${title}</h4><p>${msg}</p><div class="modal-actions">${actions.map(a=>`<button class="${a.cls||''}" onclick="${a.action}">${a.label}</button>`).join("")}</div>`;overlay.classList.add("show")}
+function hideModal(){el("modalOverlay").classList.remove("show")}
+
+document.querySelectorAll(".nav-tab").forEach(btn=>{btn.addEventListener("click",()=>{const tab=btn.dataset.tab;if(btn.classList.contains("locked-tab"))return;renderCampTab(tab)})});
+document.querySelectorAll(".smith-tab").forEach(btn=>{btn.addEventListener("click",()=>{renderSmith(btn.dataset.smith)})});
+el("descendBtn").addEventListener("click",()=>{if(S.expedition.active||!S.unlockedLayers.includes(S.selectedLayer))return;startExpedition(S.selectedLayer)});
+el("retreatBtn").addEventListener("click",()=>{if(!S.expedition.active)return;endExpedition("manual",0,0);render();save()});
+el("returnCampBtn").addEventListener("click",returnToCamp);
+el("questRefreshBtn").addEventListener("click",()=>{S.questRefreshAt=0;renderCampTab("quest")});
+el("modalOverlay").addEventListener("click",function(e){if(e.target===this)hideModal()});
+
+/* ========== 种族选择 ========== */
+function renderRaceCard(){
+  const r=RACES[raceIdx];
+  const card=document.getElementById("raceCard");
+  const isLocked=!S.unlockedRaces.includes(r.id);
+  card.className="race-card"+(isLocked?" locked":"");
+  card.style.borderColor=isLocked?"var(--line)":r.color;
+  card.innerHTML=`
+    <div class="r-icon">${r.icon}</div>
+    <div class="r-name">${r.name}</div>
+    <div class="r-title">${r.title}</div>
+    <div class="r-statline">${r.statsDetail}</div>
+    <div class="r-passive"><span style="color:${r.color};">被动</span>｜${r.passive}</div>
+    <div class="r-skill"><span style="color:${r.color};">族技</span>｜${r.skill}</div>
+    <div class="r-quote">"${r.quote}"</div>
+    ${isLocked?`<div class="r-lock">🔒 ${r.unlockCond}</div>`:""}`;
+  // 圆点指示器
+  document.getElementById("raceDots").innerHTML=RACES.map((_,i)=>`<div class="race-dot${i===raceIdx?' active':''}"></div>`).join("");
+  // 进入按钮
+  const enterBtn=document.getElementById("raceEnterBtn");
+  if(isLocked){enterBtn.disabled=true;enterBtn.textContent="🔒 尚未解锁";}
+  else{enterBtn.disabled=false;enterBtn.textContent="🕯️ 以此身踏��深渊";}
+  // 箭头
+  document.getElementById("racePrev").disabled=raceIdx===0;
+  document.getElementById("raceNext").disabled=raceIdx===RACES.length-1;
+}
+function raceSlide(dir){
+  const newIdx=raceIdx+dir;
+  if(newIdx<0||newIdx>=RACES.length)return;
+  raceIdx=newIdx;
+  renderRaceCard();
+}
+function confirmRace(){
+  const r=RACES[raceIdx];
+  if(!r.unlocked)return;
+  showModal("确认选择","你选择了 <strong style='color:"+r.color+";'>"+r.icon+" "+r.name+"</strong> 作为你的守望者。<br>此选择<strong style='color:var(--blood-bright);'>不可更改</strong>，确认继续吗？",[
+    {label:"再想想",cls:"",action:"hideModal()"},
+    {label:"确认",cls:"primary",action:"selectRace('"+r.id+"')"}
+  ]);
+}
+function selectRace(raceId){
+  const r=RACES.find(x=>x.id===raceId);
+  if(!r)return;
+  // 重置英雄基础属性
+  const h=S.hero;
+  h.baseAtk=8;h.baseDef=2;h.maxHp=50;h.hp=50;h.maxSanity=100;h.sanity=100;
+  h.torchDrainMult=1;h.baseDodge=0;h.eventRewardMul=1;h.smithCostMul=1;
+  // 应用种族属性
+  r.apply(h);
+  h.race=r.id;
+  hideModal();
+  // 进入营地
+  document.getElementById("app").classList.remove("in-race-select");
+  switchToCamp();renderCamp();save();
+}
+function startRaceSelect(){
+  document.getElementById("app").classList.add("in-race-select");
+  raceIdx=0;renderRaceCard();
+}
+
+simulateOffline();
+const tavernTab=document.querySelector(".nav-tab[data-tab='tavern']");
+if(S.unlockedLayers.includes(3)&&tavernTab){tavernTab.classList.remove("locked-tab");tavernTab.innerHTML="🍺 酒 馆";tavernTab.addEventListener("click",()=>{renderCampTab("tavern")})}
+// 新玩家：进入种族选择；老玩家：进入营地
+const hasSave=localStorage.getItem(SAVE_KEY);
+if(!hasSave){startRaceSelect();}
+else{switchToCamp();renderCamp();}
+save();
+setInterval(()=>{if(document.body.classList.contains("in-expedition"))stepTick(false);render();save()},1000);
+window.addEventListener("beforeunload",save);
+</script>
+</body>
+</html>
