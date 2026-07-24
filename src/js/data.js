@@ -48,18 +48,18 @@ const REFINED_MATS=[
 ];
 const LAYERS=[
 {index:0,name:"浅层回廊",startDepth:0,maxDepth:70,monsters:[
-{name:"巨鼠",hpMul:0.7,atkMul:0.8,goldMul:1.0,special:"split_chance",weight:25,type:"beast",depthMin:0,depthMax:20,drops:[{mid:"rat_tooth",chance:0.5}]},
-{name:"洞穴蝠",hpMul:0.5,atkMul:1.1,goldMul:1.0,special:"dodge15",weight:20,type:"beast",depthMin:0,depthMax:20,drops:[{mid:"bat_wing",chance:0.5}]},
+{name:"巨鼠",hpMul:0.7,atkMul:0.8,goldMul:0,special:"split_chance",weight:25,type:"beast",depthMin:0,depthMax:20,drops:[{mid:"rat_tooth",chance:0.5}]},
+{name:"洞穴蝠",hpMul:0.5,atkMul:1.1,goldMul:0,special:"dodge15",weight:20,type:"beast",depthMin:0,depthMax:20,drops:[{mid:"bat_wing",chance:0.5}]},
 {name:"苔衣尸",hpMul:1.3,atkMul:0.6,goldMul:1.2,special:"regen",weight:20,type:"humanoid",depthMin:0,depthMax:20,drops:[{mid:"bone_frag",chance:0.5}]},
-{name:"白骨犬",hpMul:0.9,atkMul:1.4,goldMul:1.0,special:"pierce",weight:15,type:"beast",depthMin:0,depthMax:20,drops:[{mid:"bone_frag",chance:0.5}]},
+{name:"白骨犬",hpMul:0.9,atkMul:1.4,goldMul:0,special:"pierce",weight:15,type:"beast",depthMin:0,depthMax:20,drops:[{mid:"bone_frag",chance:0.5}]},
 {name:"断指盗",hpMul:0.8,atkMul:0.9,goldMul:1.5,special:"bonusGold",weight:15,type:"humanoid",depthMin:0,depthMax:20,drops:[{mid:"soul_shard",chance:0.4}]},
-{name:"石肤蜥蜴",hpMul:1.5,atkMul:0.5,goldMul:1.0,special:"armor3",weight:20,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"stone_scale",chance:0.6}]},
-{name:"腐泥怪",hpMul:1.8,atkMul:0.4,goldMul:1.0,special:"split",weight:18,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"slime_essence",chance:0.5},{mid:"bone_frag",chance:0.3}]},
+{name:"石肤蜥蜴",hpMul:1.5,atkMul:0.5,goldMul:0,special:"armor3",weight:20,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"stone_scale",chance:0.6}]},
+{name:"腐泥怪",hpMul:1.8,atkMul:0.4,goldMul:0,special:"split",weight:18,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"slime_essence",chance:0.5},{mid:"bone_frag",chance:0.3}]},
 {name:"缚灵侍女",hpMul:1.0,atkMul:1.0,goldMul:1.2,special:"narrative",weight:18,type:"humanoid",depthMin:20,depthMax:45,drops:[{mid:"soul_shard",chance:0.4}]},
-{name:"暗影爬行者",hpMul:0.6,atkMul:1.3,goldMul:1.0,special:"darkOnly",weight:12,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"shadow_dust",chance:0.5}]},
-{name:"尖啸之颅",hpMul:0.5,atkMul:0.7,goldMul:1.0,special:"sanityDmg",weight:12,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"soul_shard",chance:0.5}]},
-{name:"深渊血蛭",hpMul:0.7,atkMul:0.9,goldMul:1.0,special:"lifesteal",weight:20,type:"beast",depthMin:45,depthMax:70,drops:[{mid:"soul_shard",chance:0.5}]},
-{name:"熔火幼兽",hpMul:1.2,atkMul:1.2,goldMul:1.0,special:"fireDmg",weight:18,type:"beast",depthMin:45,depthMax:70,drops:[{mid:"magma_core",chance:0.5}]},
+{name:"暗影爬行者",hpMul:0.6,atkMul:1.3,goldMul:0,special:"darkOnly",weight:12,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"shadow_dust",chance:0.5}]},
+{name:"尖啸之颅",hpMul:0.5,atkMul:0.7,goldMul:0,special:"sanityDmg",weight:12,type:"beast",depthMin:20,depthMax:45,drops:[{mid:"soul_shard",chance:0.5}]},
+{name:"深渊血蛭",hpMul:0.7,atkMul:0.9,goldMul:0,special:"lifesteal",weight:20,type:"beast",depthMin:45,depthMax:70,drops:[{mid:"soul_shard",chance:0.5}]},
+{name:"熔火幼兽",hpMul:1.2,atkMul:1.2,goldMul:0,special:"fireDmg",weight:18,type:"beast",depthMin:45,depthMax:70,drops:[{mid:"magma_core",chance:0.5}]},
 {name:"低语信徒",hpMul:0.8,atkMul:0.8,goldMul:1.4,special:"sanityDrainAura",weight:18,type:"humanoid",depthMin:45,depthMax:70,drops:[{mid:"soul_shard",chance:0.5}]},
 {name:"锈蚀哨兵",hpMul:2.0,atkMul:0.7,goldMul:1.3,special:"blockCrit",weight:15,type:"humanoid",depthMin:45,depthMax:70,drops:[{mid:"stone_scale",chance:0.5}]},
 {name:"暗影刺客",hpMul:0.4,atkMul:1.8,goldMul:1.5,special:"dodge20",weight:12,type:"humanoid",depthMin:45,depthMax:70,drops:[{mid:"shadow_dust",chance:0.6}]}
